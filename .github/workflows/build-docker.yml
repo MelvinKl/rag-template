@@ -1,0 +1,54 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push Docker image mcp-server
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/rag-mcp:v1.0.0
+          docker build -f mcp-server/Dockerfile . -t $TAG
+          docker push $TAG
+      - name: Build and push Docker image rag-backend
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/rag-backend:v1.0.0
+          docker build -f rag-backend/Dockerfile . -t $TAG
+          docker push $TAG          
+      - name: Build and push Docker image frontend
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/frontend:v1.0.0
+          docker build -f frontend/apps/chat-app/Dockerfile . -t $TAG
+          docker push $TAG                    
+      - name: Build and push Docker image admin frontend
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/admin-frontend:v1.0.0
+          docker build -f frontend/apps/admin-app/Dockerfile . -t $TAG
+          docker push $TAG             
+      - name: Build and push Docker image admin-backend
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/admin-backend:v1.0.0
+          docker build -f admin-backend/Dockerfile . -t $TAG
+          docker push $TAG                    
+      - name: Build and push Docker image document-extractor
+        run: |
+          export TAG=ghcr.io/${GITHUB_REPOSITORY@L}/document-extractor:v1.0.0
+          docker build -f document-extractor/Dockerfile . -t $TAG
+          docker push $TAG           
