@@ -55,11 +55,7 @@ from summarizer import CustomLangchainSummarizer
 class UseCaseContainer(DependencyContainer):
 
 
-    large_language_model = Selector(
-        DependencyContainer.class_selector_config.llm_type,
-        ollama=Singleton(llm_provider, DependencyContainer.ollama_settings, Ollama),
-        stackit=Singleton(llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI),
-    )
+    large_language_model = Singleton(llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI)
 
     summarizer = Singleton(
         CustomLangchainSummarizer,
