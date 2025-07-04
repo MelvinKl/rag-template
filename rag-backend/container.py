@@ -13,6 +13,7 @@ from dependency_injector.providers import Singleton
 from dependency_injector import containers
 
 from rag_core_api.dependency_container import DependencyContainer
+from rag_core_lib.impl.llms.llm_factory import llm_provider
 
 from chat_endpoint import UseCaseChat
 
@@ -21,5 +22,5 @@ from chat_endpoint import UseCaseChat
 class UseCaseContainer(DependencyContainer):
     chat_endpoint = Singleton(UseCaseChat, DependencyContainer.traced_chat_graph)
 
-    large_language_model = Singleton(DependencyContainer.llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI)
-        
+    large_language_model = Singleton(llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI)
+
