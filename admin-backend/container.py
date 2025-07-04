@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 from dependency_injector.providers import Singleton
 from dependency_injector import containers
 
-from rag_core_api.dependency_container import DependencyContainer
+from admin_api_lib.dependency_container import DependencyContainer
 
 
 @containers.copy(DependencyContainer)
