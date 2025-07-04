@@ -21,9 +21,9 @@ RUN touch /app/admin-backend/log/logfile.log && chmod 600 /app/admin-backend/log
 
 RUN poetry config virtualenvs.create false && \
     if [ "$dev" = "1" ]; then \
-        poetry install --no-interaction --no-ansi --no-root --with dev; \
+        poetry add  langchain-openai; poetry install --no-interaction --no-ansi --no-root --with dev; \
     else \
-        poetry install --no-interaction --no-ansi --no-root; \
+        poetry add  langchain-openai; poetry install --no-interaction --no-ansi --no-root; \
     fi
 
 FROM --platform=linux/amd64 python:3.13-bookworm
