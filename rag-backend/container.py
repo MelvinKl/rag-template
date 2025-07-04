@@ -8,7 +8,7 @@ as the dependency you are replacing it with.
 Furthermore, if the dependency you are replacing has any dependencies from the dependency container,
 they can be simply reused in the new dependency as shown in the example.
 """
-
+from langchain_openai import ChatOpenAI
 from dependency_injector.providers import Singleton
 from dependency_injector import containers
 
@@ -20,3 +20,6 @@ from chat_endpoint import UseCaseChat
 @containers.copy(DependencyContainer)
 class UseCaseContainer(DependencyContainer):
     chat_endpoint = Singleton(UseCaseChat, DependencyContainer.traced_chat_graph)
+
+    large_language_model = Singleton(llm_provider, stackit_vllm_settings, ChatOpenAI)
+        
