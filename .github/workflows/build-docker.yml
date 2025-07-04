@@ -13,6 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          submodules: 'true'
           ref: ${{ github.ref }}
       - name: Login to ghcr.io
         uses: docker/login-action@v3
