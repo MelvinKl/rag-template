@@ -21,5 +21,5 @@ from chat_endpoint import UseCaseChat
 class UseCaseContainer(DependencyContainer):
     chat_endpoint = Singleton(UseCaseChat, DependencyContainer.traced_chat_graph)
 
-    large_language_model = Singleton(llm_provider, stackit_vllm_settings, ChatOpenAI)
+    large_language_model = Singleton(DependencyContainer.llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI)
         
