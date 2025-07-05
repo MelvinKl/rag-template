@@ -78,13 +78,13 @@ class CustomLangchainSummarizer(Summarizer):
             async with self._semaphore:
                 try:
                     outputs.append(
-                        await self._create_chain().ainvoke({"text": langchain_document.page_content}, config)
+                        (await self._create_chain().ainvoke({"text": langchain_document.page_content}, config)).content
                     )
                 except Exception as e:
                     logger.error("Error in summarizing langchain doc: %s %s", e, traceback.format_exc())
                     config["tries_remaining"] = tries_remaining - 1
                     outputs.append(
-                        await self._create_chain().ainvoke({"text": langchain_document.page_content}, config)
+                        (await self._create_chain().ainvoke({"text": langchain_document.page_content}, config)).content
                     )
 
         if len(outputs) == 1:
