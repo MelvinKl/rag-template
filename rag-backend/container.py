@@ -72,16 +72,14 @@ from dependency_injector.providers import (  # noqa: WOT001
 class UseCaseContainer(DependencyContainer):
 
 
-    chat_endpoint = Singleton(UseCaseChat, DependencyContainer.traced_chat_graph)
+    DependencyContainer.large_language_model.override(Singleton(llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI))
 
-    large_language_model = Singleton(llm_provider, DependencyContainer.stackit_vllm_settings, ChatOpenAI)
-
-    answer_generation_chain = Singleton(
+    DependencyContainer.answer_generation_chain.override( Singleton(
         CustomAnswerGenerationChain,
         langfuse_manager=DependencyContainer.langfuse_manager,
-    )
+    ))
 
-    rephrasing_chain = Singleton(
+    DependencyContainer.rephrasing_chain.override(Singleton(
         CustomRephrasingChain,
         langfuse_manager=DependencyContainer.langfuse_manager,
-    )
+    ))
