@@ -94,7 +94,7 @@ class CustomLangchainSummarizer(Summarizer):
             "Reduced number of chars from %d to %d"
             % (len("".join([x.page_content for x in langchain_documents])), len(summary))
         )
-        return (await self.ainvoke(summary, config)).content
+        return await self.ainvoke(summary, config)
 
     def _create_chain(self) -> Runnable:
         return self._langfuse_manager.get_base_prompt(self.__class__.__name__) | self._langfuse_manager.get_base_llm(
