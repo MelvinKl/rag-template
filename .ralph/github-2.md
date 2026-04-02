@@ -33,7 +33,7 @@ Answering the question will be done by the mcp-client and is something that will
     - Analyze the chat graph flow in the RAG backend to understand where answer generation occurs.
     - Determine if modifying the API to support citation-only responses is feasible.
 
-- [ ] 5. Verify RAG backend API answer generation skip is functional.
+- [x] 5. Verify RAG backend API answer generation skip is functional.
   - Acceptance Criteria:
     - Confirm `skip_answer_generation` parameter in ChatRequest model works correctly
     - Verify the DefaultChatGraph properly handles the parameter by running only retrieval nodes (language detection, rephrasing, and retrieval) and bypassing the answer generation node

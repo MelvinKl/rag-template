@@ -30,7 +30,7 @@ The server exposes two main MCP tools for interacting with the RAG system:
 
 ### `chat_simple`
 
-Simple question-answering interface that returns plain text responses.
+Simple interface that retrieves relevant source documents without generating an answer. The MCP client is expected to generate the answer from the returned citations.
 
 **Parameters:**
 
@@ -39,11 +39,13 @@ Simple question-answering interface that returns plain text responses.
 
 **Returns:**
 
-- `str`: Plain text answer from the RAG system
+- `list[dict]`: List of citation objects, each containing:
+  - `content`: The source document text
+  - `metadata`: Dictionary of metadata key-value pairs (e.g., source file, page number)
 
 ### `chat_with_history`
 
-Advanced chat interface that supports conversation history and returns structured responses with citations.
+Advanced interface that supports conversation history and retrieves relevant source documents without generating an answer. The MCP client is expected to generate the answer from the returned citations.
 
 **Parameters:**
 
@@ -59,10 +61,9 @@ Each history item should be a dictionary with:
 
 **Returns:**
 
-- `dict`: Structured response containing:
-  - `answer`: The response text
-  - `finish_reason`: Why the response ended
-  - `citations`: List of source documents with content and metadata
+- `list[dict]`: List of citation objects, each containing:
+  - `content`: The source document text
+  - `metadata`: Dictionary of metadata key-value pairs (e.g., source file, page number)
 
 ## Configuration
 
@@ -180,7 +181,7 @@ backend:
       session_id: "Unique identifier for the chat session."
       message: "The current message/question to ask."
       history: "Previous conversation history. Each item should be:\n    {\"role\": \"user\" or \"assistant\", \"message\": \"the message text\"}"
-    chatWithHistoryReturns: "Response containing:\n    - answer: The response text\n    - finish_reason: Why the response ended\n    - citations: List of source documents used (simplified)"
+    chatWithHistoryReturns: "List of citation objects, each containing:\n    - content: The source document text\n    - metadata: Dictionary of metadata key-value pairs"
     chatWithHistoryNotes: ""
     chatWithHistoryExamples: ""
 ```

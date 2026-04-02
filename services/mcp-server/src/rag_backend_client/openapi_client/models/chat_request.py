@@ -29,7 +29,8 @@ class ChatRequest(BaseModel):
 
     history: Optional[ChatHistory] = None
     message: StrictStr
-    __properties: ClassVar[List[str]] = ["history", "message"]
+    skip_answer_generation: Optional[bool] = False
+    __properties: ClassVar[List[str]] = ["history", "message", "skip_answer_generation"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -85,6 +86,7 @@ class ChatRequest(BaseModel):
             {
                 "history": (ChatHistory.from_dict(obj["history"]) if obj.get("history") is not None else None),
                 "message": obj.get("message"),
+                "skip_answer_generation": obj.get("skip_answer_generation", False),
             }
         )
         return _obj

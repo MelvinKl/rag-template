@@ -92,6 +92,7 @@ class ChatRequest(BaseModel):
                     else None
                 ),
                 "message": obj.get("message"),
+                "skip_answer_generation": obj.get("skip_answer_generation", False),
             }
         )
         return _obj
