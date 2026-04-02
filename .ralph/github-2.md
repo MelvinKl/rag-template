@@ -39,7 +39,7 @@ Answering the question will be done by the mcp-client and is something that will
     - Verify the DefaultChatGraph properly handles the parameter by running only retrieval nodes (language detection, rephrasing, and retrieval) and bypassing the answer generation node
     - Test that the API returns proper citations in ChatResponse when skip_answer_generation is True
 
-- [ ] 6. Confirm MCP server is properly using skip_answer_generation parameter.
+- [x] 6. Confirm MCP server is properly using skip_answer_generation parameter.
   - Acceptance Criteria:
     - Verify `chat_simple` method passes `skip_answer_generation=True` to ChatRequest (already implemented at line 57)
     - Verify `chat_with_history` method passes `skip_answer_generation=True` to ChatRequest (already implemented at line 92)
