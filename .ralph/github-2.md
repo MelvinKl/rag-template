@@ -49,20 +49,21 @@ Answering the question will be done by the mcp-client and is something that will
 
 - [ ] 7. Create or update tests to verify that the MCP server returns only citations without generating answers.
   - Acceptance Criteria:
-    - Tests verify that `chat_simple` and `chat_with_history` return citation data without answers by asserting answer field is empty/null in ChatResponse.
-    - Tests confirm that RAG backend skips answer generation node when `skip_answer_generation=True` is passed, reducing latency and cost.
-    - Tests validate that the citation data is properly formatted with page_content and metadata from InformationPiece objects.
-    - Tests mock or use real ChatRequest/ChatResponse with skip_answer_generation parameter to verify end-to-end behavior.
+    - Tests verify that `chat_simple` and `chat_with_history` return citation data without answers by asserting answer field is empty/null in ChatResponse (both methods pass skip_answer_generation=True at lines 57 and 92).
+    - Tests confirm that RAG backend skips answer generation node when `skip_answer_generation=True` is passed, reducing latency and cost (DefaultChatGraph in RAG backend properly handles this parameter).
+    - Tests validate that the citation data is properly formatted with page_content and metadata extracted from InformationPiece objects by the citation simplification logic.
+    - Tests mock or use real ChatRequest/ChatResponse with skip_answer_generation=True to verify end-to-end behavior matches implementation in rag_mcp_server.py.
 
 - [ ] 8. Verify REST API endpoint properly handles citation-only responses.
   - Acceptance Criteria:
-    - Confirm the `/chat` REST API endpoint in the RAG backend correctly processes the `skip_answer_generation` parameter from ChatRequest (verified in Step 5 that DefaultChatGraph properly handles this)
-    - Verify that when `skip_answer_generation=True`, the endpoint returns a ChatResponse with citations populated and answer field empty/null (confirmed in Step 5)
-    - Test the endpoint with both `skip_answer_generation=True` and `False` to confirm proper behavior difference: True skips answer_generation node, False runs full pipeline
-    - Verify performance improvement by measuring that skip_answer_generation=True only runs language_detection, rephrasing, and retrieval nodes
+    - Confirm the `/chat` REST API endpoint in the RAG backend correctly processes the `skip_answer_generation` parameter from ChatRequest (DefaultChatGraph confirmed to handle this parameter in Step 5).
+    - Verify that when `skip_answer_generation=True`, the endpoint returns a ChatResponse with citations populated and answer field empty/null (confirmed in Step 5 that ChatResponse properly contains empty/null answer).
+    - Test the endpoint with both `skip_answer_generation=True` (as used by MCP server at lines 57 and 92) and `False` to confirm behavior difference: True skips answer_generation node for performance, False runs full pipeline.
+    - Verify performance improvement by measuring that skip_answer_generation=True only runs language_detection, rephrasing, and retrieval nodes, eliminating answer generation overhead.
 
 - [ ] 9. Run `make test` and confirm it succeeds.
   - Acceptance Criteria:
     - `make test` exits successfully with all tests passing.
-    - All MCP server tests pass, including tests for `chat_simple` and `chat_with_history` returning citations without answers.
-    - All RAG backend tests pass, confirming skip_answer_generation parameter works correctly across the API.
+    - All MCP server tests pass, including tests for `chat_simple` and `chat_with_history` methods (lines 57 and 92) returning citations without answers via skip_answer_generation=True parameter.
+    - All RAG backend tests pass, confirming skip_answer_generation parameter and DefaultChatGraph citation-only response logic work correctly across the API.
+    - Tests validate that InformationPiece objects are properly converted to citation format with page_content and metadata extraction in the citation simplification logic.
