@@ -20,7 +20,9 @@ from rag_core_api.impl.answer_generation_chains.answer_generation_chain import (
     AnswerGenerationChain,
 )
 from rag_core_api.impl.answer_generation_chains.rephrasing_chain import RephrasingChain
-from rag_core_api.impl.answer_generation_chains.language_detection_chain import LanguageDetectionChain
+from rag_core_api.impl.answer_generation_chains.language_detection_chain import (
+    LanguageDetectionChain,
+)
 from rag_core_api.impl.graph.graph_state.graph_state import AnswerGraphState
 from rag_core_api.impl.retriever.no_or_empty_collection_error import (
     NoOrEmptyCollectionError,
@@ -109,7 +111,10 @@ class DefaultChatGraph(GraphBase):
         self._graph = self._setup_graph()
 
     async def ainvoke(
-        self, graph_input: ChatRequest, config: Optional[RunnableConfig] = None, **kwargs: Any
+        self,
+        graph_input: ChatRequest,
+        config: Optional[RunnableConfig] = None,
+        **kwargs: Any,
     ) -> ChatResponse:
         """
         Asynchronously invokes the chat graph with the provided input and configuration.
@@ -140,13 +145,82 @@ class DefaultChatGraph(GraphBase):
                 finish_reason=self._error_messages.empty_message,
             )
 
+        # If skip_answer_generation is True, we only want to retrieve citations without generating an answer
+        if graph_input.skip_answer_generation:
+            history_of_interest = []
+            if graph_input.history and graph_input.history.messages:
+                history_of_interest = graph_input.history.messages[
+                    -self._chat_history_settings.limit :
+                ]
+                if self._chat_history_settings.reverse:
+                    pairs = list(
+                        zip(history_of_interest[::2], history_of_interest[1::2])
+                    )
+                    reversed_pairs = pairs[::-1]
+                    history_of_interest = [
+                        item for sublist in reversed_pairs for item in sublist
+                    ]
+            history = "\n".join([f"{x.role}: {x.message}" for x in history_of_interest])
+            state = AnswerGraphState.create(
+                question=graph_input.message,
+                history=history,
+                error_messages=[],
+                finish_reasons=[],
+                information_pieces=[],
+                langchain_documents=[],
+            )
+
+            logger.info(
+                "RECEIVED question (skip answer generation): %s",
+                state["question"],
+            )
+
+            # Run the graph up to the retrieve node to get information pieces
+            # We'll manually execute the nodes up to retrieve since we don't need to generate
+            current_state = state
+
+            # Determine language node
+            current_state = await self._determine_language_node(current_state, config)
+
+            # Rephrase node
+            current_state = await self._rephrase_node(current_state, config)
+
+            # Retrieve node
+            current_state = await self._retrieve_node(current_state)
+
+            # Check if we encountered an error during retrieval
+            if self.ERROR_MESSAGES_KEY in current_state:
+                logger.error(
+                    "Error during retrieval: %s", current_state[self.ERROR_MESSAGES_KEY]
+                )
+                return ChatResponse(
+                    answer=" ".join(current_state[self.ERROR_MESSAGES_KEY]),
+                    citations=[],
+                    finish_reason=" ".join(current_state.get(self.FINISH_REASONS, [])),
+                )
+
+            # Create response with only citations (no answer)
+            information_pieces = current_state.get("information_pieces", [])
+            chat_response = ChatResponse(
+                answer="",  # Empty answer as we skipped generation
+                citations=information_pieces,
+                finish_reason="stop",
+            )
+
+            logger.info("RETRIEVED citations only (skipped answer generation)")
+            return chat_response
+
         history_of_interest = []
         if graph_input.history and graph_input.history.messages:
-            history_of_interest = graph_input.history.messages[-self._chat_history_settings.limit :]
+            history_of_interest = graph_input.history.messages[
+                -self._chat_history_settings.limit :
+            ]
             if self._chat_history_settings.reverse:
                 pairs = list(zip(history_of_interest[::2], history_of_interest[1::2]))
                 reversed_pairs = pairs[::-1]
-                history_of_interest = [item for sublist in reversed_pairs for item in sublist]
+                history_of_interest = [
+                    item for sublist in reversed_pairs for item in sublist
+                ]
         history = "\n".join([f"{x.role}: {x.message}" for x in history_of_interest])
         state = AnswerGraphState.create(
             question=graph_input.message,
@@ -201,33 +275,47 @@ class DefaultChatGraph(GraphBase):
     #########
     # nodes #
     #########
-    async def _determine_language_node(self, state: dict, config: Optional[RunnableConfig] = None) -> dict:
+    async def _determine_language_node(
+        self, state: dict, config: Optional[RunnableConfig] = None
+    ) -> dict:
         question = state["question"]
         # Prefer the LLM-based language detection; fallback to langdetect if needed inside the chain.
         try:
-            question_language = await self._language_detection_chain.ainvoke(state, config=config)
+            question_language = await self._language_detection_chain.ainvoke(
+                state, config=config
+            )
         except Exception:
             try:
                 question_language = langdetect.detect(question)
             except Exception:
                 question_language = "en"
-        logger.debug('Detected langauge for question "%s": %s', question, question_language)
+        logger.debug(
+            'Detected langauge for question "%s": %s', question, question_language
+        )
         return {"language": question_language}
 
-    async def _rephrase_node(self, state: dict, config: Optional[RunnableConfig] = None) -> dict:
+    async def _rephrase_node(
+        self, state: dict, config: Optional[RunnableConfig] = None
+    ) -> dict:
         if not state.get("history"):
             return {"rephrased_question": state["question"]}
-        rephrased_question = await self._rephrasing_chain.ainvoke(chain_input=state, config=config)
+        rephrased_question = await self._rephrasing_chain.ainvoke(
+            chain_input=state, config=config
+        )
         # Ensure rephrased_question is a string
         rephrased_question = getattr(rephrased_question, "content", rephrased_question)
         rephrased_question = (
-            rephrased_question.strip() if isinstance(rephrased_question, str) else str(rephrased_question).strip()
+            rephrased_question.strip()
+            if isinstance(rephrased_question, str)
+            else str(rephrased_question).strip()
         )
         if not rephrased_question:
             rephrased_question = state["question"]
         return {"rephrased_question": rephrased_question}
 
-    async def _generate_node(self, state: dict, config: Optional[RunnableConfig] = None) -> dict:
+    async def _generate_node(
+        self, state: dict, config: Optional[RunnableConfig] = None
+    ) -> dict:
         answer_text = await self._answer_generation_chain.ainvoke(state, config)
         if hasattr(answer_text, "content"):
             answer_text = answer_text.content
@@ -243,7 +331,9 @@ class DefaultChatGraph(GraphBase):
     async def _retrieve_node(self, state: dict) -> dict:
         try:
             question = state.get("rephrased_question") or state["question"]
-            retrieved_documents = await self._composite_retriever.ainvoke(retriever_input=question)
+            retrieved_documents = await self._composite_retriever.ainvoke(
+                retriever_input=question
+            )
         except NoOrEmptyCollectionError:
             logger.warning("No or empty collection encountered.")
             return {
@@ -259,14 +349,17 @@ class DefaultChatGraph(GraphBase):
 
         response = {}
         if not retrieved_documents:
-            response[self.ERROR_MESSAGES_KEY] = [self._error_messages.no_documents_message]
+            response[self.ERROR_MESSAGES_KEY] = [
+                self._error_messages.no_documents_message
+            ]
             response[self.FINISH_REASONS] = ["No documents found"]
             return response
 
         information_pieces = [
             self._mapper.langchain_document2information_piece(document)
             for document in retrieved_documents
-            if document.metadata.get("type", ContentType.SUMMARY.value) != ContentType.SUMMARY.value
+            if document.metadata.get("type", ContentType.SUMMARY.value)
+            != ContentType.SUMMARY.value
         ]
 
         # If only summaries were retrieved (no concrete underlying documents), treat as "no documents"
@@ -284,7 +377,11 @@ class DefaultChatGraph(GraphBase):
     async def _error_node(self, state: dict) -> dict:
         error_message = " ".join(set(state[self.ERROR_MESSAGES_KEY]))
         finish_reson = " ".join(set(state[self.FINISH_REASONS]))
-        return {"response": ChatResponse(answer=error_message, citations=[], finish_reason=finish_reson)}
+        return {
+            "response": ChatResponse(
+                answer=error_message, citations=[], finish_reason=finish_reson
+            )
+        }
 
     #####################
     # conditional edges #
@@ -295,7 +392,9 @@ class DefaultChatGraph(GraphBase):
         return GraphNodeNames.ERROR_NODE
 
     def _add_nodes(self):
-        self._state_graph.add_node(GraphNodeNames.DETERMINE_LANGUAGE, self._determine_language_node)
+        self._state_graph.add_node(
+            GraphNodeNames.DETERMINE_LANGUAGE, self._determine_language_node
+        )
         self._state_graph.add_node(GraphNodeNames.REPHRASE, self._rephrase_node_builder)
         self._state_graph.add_node(GraphNodeNames.RETRIEVE, self._retrieve_node)
         self._state_graph.add_node(GraphNodeNames.GENERATE, self._generate_node_builder)
@@ -303,10 +402,14 @@ class DefaultChatGraph(GraphBase):
 
     def _wire_graph(self):
         self._state_graph.add_edge(START, GraphNodeNames.DETERMINE_LANGUAGE)
-        self._state_graph.add_edge(GraphNodeNames.DETERMINE_LANGUAGE, GraphNodeNames.REPHRASE)
+        self._state_graph.add_edge(
+            GraphNodeNames.DETERMINE_LANGUAGE, GraphNodeNames.REPHRASE
+        )
         self._state_graph.add_edge(GraphNodeNames.REPHRASE, GraphNodeNames.RETRIEVE)
         self._state_graph.add_conditional_edges(
-            GraphNodeNames.RETRIEVE, self._docs_retrieved_edge, [GraphNodeNames.GENERATE, GraphNodeNames.ERROR_NODE]
+            GraphNodeNames.RETRIEVE,
+            self._docs_retrieved_edge,
+            [GraphNodeNames.GENERATE, GraphNodeNames.ERROR_NODE],
         )
         self._state_graph.add_edge(GraphNodeNames.GENERATE, END)
         self._state_graph.add_edge(GraphNodeNames.ERROR_NODE, END)

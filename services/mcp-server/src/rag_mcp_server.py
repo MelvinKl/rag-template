@@ -54,7 +54,7 @@ class RagMcpServer:
 
     @extensible_docstring("chat_simple")
     async def chat_simple(self, session_id: str, message: str) -> list[dict[str, Any]]:
-        chat_request = ChatRequest(message=message)
+        chat_request = ChatRequest(message=message, skip_answer_generation=True)
         response = await self._handle_chat(session_id, chat_request)
 
         # Simplify citations for easier consumption
@@ -88,7 +88,9 @@ class RagMcpServer:
                 )
             chat_history = ChatHistory(messages=history_messages)
 
-        chat_request = ChatRequest(message=message, history=chat_history)
+        chat_request = ChatRequest(
+            message=message, history=chat_history, skip_answer_generation=True
+        )
         response = await self._handle_chat(session_id, chat_request)
 
         # Simplify citations for easier consumption

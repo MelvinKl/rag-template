@@ -87,6 +87,12 @@ async def test_chat_simple_returns_only_citations(
         session_id="test_session", message="test message"
     )
 
+    # Verify that skip_answer_generation was set to True
+    call_args = rag_mcp_server._handle_chat.call_args
+    assert call_args is not None
+    chat_request = call_args[0][1]  # Second argument is chat_request
+    assert chat_request.skip_answer_generation == True
+
     # Verify
     assert isinstance(result, list)
     assert len(result) == 2
@@ -114,6 +120,12 @@ async def test_chat_with_history_returns_only_citations(
         message="test message",
         history=[{"role": "user", "message": "previous message"}],
     )
+
+    # Verify that skip_answer_generation was set to True
+    call_args = rag_mcp_server._handle_chat.call_args
+    assert call_args is not None
+    chat_request = call_args[0][1]  # Second argument is chat_request
+    assert chat_request.skip_answer_generation == True
 
     # Verify
     assert isinstance(result, list)
@@ -143,6 +155,12 @@ async def test_chat_simple_handles_empty_citations(rag_mcp_server, mock_api_clie
         session_id="test_session", message="test message"
     )
 
+    # Verify that skip_answer_generation was set to True
+    call_args = rag_mcp_server._handle_chat.call_args
+    assert call_args is not None
+    chat_request = call_args[0][1]  # Second argument is chat_request
+    assert chat_request.skip_answer_generation == True
+
     # Verify
     assert isinstance(result, list)
     assert len(result) == 0
@@ -164,6 +182,12 @@ async def test_chat_with_history_handles_empty_citations(
     result = await rag_mcp_server.chat_with_history(
         session_id="test_session", message="test message", history=[]
     )
+
+    # Verify that skip_answer_generation was set to True
+    call_args = rag_mcp_server._handle_chat.call_args
+    assert call_args is not None
+    chat_request = call_args[0][1]  # Second argument is chat_request
+    assert chat_request.skip_answer_generation == True
 
     # Verify
     assert isinstance(result, list)
