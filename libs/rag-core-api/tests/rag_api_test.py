@@ -513,6 +513,42 @@ async def test_chat_with_summary_only_type(api_client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_chat_skip_answer_generation(api_client: AsyncClient):
+    """Verify the chat endpoint returns only citations when skip_answer_generation is True.
+
+    Parameters
+    ----------
+    api_client : AsyncClient
+        The API client fixture used for making HTTP requests.
+    """
+    information_pieces = _create_information_pieces()
+
+    response = await api_client.post("/information_pieces/upload", json=information_pieces)
+    response.raise_for_status()
+
+    _session_id = "test-session"
+    _chat_request = ChatRequest(
+        message="What is the capital of Germany?",
+        history=ChatHistory(messages=[]).model_dump(),
+        skip_answer_generation=True,
+    ).model_dump()
+
+    response = await api_client.post(f"/chat/{_session_id}", json=_chat_request)
+    assert response.status_code == 200
+    data = response.json()
+
+    # Answer should be empty since we skipped answer generation
+    assert data["answer"] == ""
+
+    # Citations should be populated
+    assert "citations" in data
+    assert len(data["citations"]) > 0
+
+    # Finish reason should be "stop"
+    assert data["finish_reason"] == "stop"
+
+
+@pytest.mark.asyncio
 async def test_upload_documents(api_client: AsyncClient):
     """Verify the document upload functionality of the API.
 

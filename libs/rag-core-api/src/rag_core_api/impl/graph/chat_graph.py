@@ -177,19 +177,20 @@ class DefaultChatGraph(GraphBase):
 
             # Run the graph up to the retrieve node to get information pieces
             # We'll manually execute the nodes up to retrieve since we don't need to generate
+            # Each node returns a partial dict, so we merge the results into the state
             current_state = state
 
             # Determine language node
-            current_state = await self._determine_language_node(current_state, config)
+            current_state = {**current_state, **await self._determine_language_node(current_state, config)}
 
             # Rephrase node
-            current_state = await self._rephrase_node(current_state, config)
+            current_state = {**current_state, **await self._rephrase_node(current_state, config)}
 
             # Retrieve node
-            current_state = await self._retrieve_node(current_state)
+            current_state = {**current_state, **await self._retrieve_node(current_state)}
 
             # Check if we encountered an error during retrieval
-            if self.ERROR_MESSAGES_KEY in current_state:
+            if current_state.get(self.ERROR_MESSAGES_KEY):
                 logger.error(
                     "Error during retrieval: %s", current_state[self.ERROR_MESSAGES_KEY]
                 )
