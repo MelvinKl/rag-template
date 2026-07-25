@@ -32,7 +32,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - `chat_simple_description` (lines 36-41): Update `"get back the answer as plain text"` (line 40) to reflect that citations (source snippets with metadata) are returned, not the answer directly.
     - `chat_with_history_description` (lines 54-59): Update `"get structured response"` (line 56) to reflect that only citations are returned, not a structured answer object.
 
-- [ ] 5. Verify tests in `services/mcp-server/tests/docstring_system_test.py` pass without changes.
+- [x] 5. Verify tests in `services/mcp-server/tests/docstring_system_test.py` pass without changes.
   - Acceptance Criteria:
     - Step 4 updated `chat_simple_description` (lines 36-43) to mention "citation objects" and `chat_with_history_description` (lines 55-60) to mention "list of citation objects" — the returns fields were already correct from Steps 2-3.
     - `test_generated_docstrings_content` (line 243): The assertion at line 249 (`"Send a message to the RAG system" in simple_doc`) still matches the new `chat_simple_description` prefix. The assertion at line 258 (`"Send a message to the RAG system with chat history and get a list of citation objects" in history_doc`) matches the new `chat_with_history_description` exactly. No change needed.
@@ -45,5 +45,8 @@ It should Not generate the answer to the question, but only Return the sources a
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass.
-    - Step 4 changed only the default values of `chat_simple_description` and `chat_with_history_description` in `mcp_settings.py` (lines 36-43, 55-60). No test file assertions match the old description strings, so no test changes are expected.
-    - Key tests to verify: `test_generated_docstrings_content` (line 243) — the prefix assertions at lines 249 and 258 still match the updated descriptions; `test_default_settings` (line 173), `test_custom_configuration` (line 267), and `test_empty_configuration` (line 337) — all unaffected.
+    - Step 5 confirmed that `test_generated_docstrings_content` (line 243) passes as-is: the prefix assertion at line 249 (`"Send a message to the RAG system" in simple_doc`) matches the updated `chat_simple_description`, and the assertion at line 258 (`"Send a message to the RAG system with chat history and get a list of citation objects" in history_doc`) matches the updated `chat_with_history_description` exactly.
+    - Step 5 confirmed `test_default_settings` (line 173) is unaffected (only checks types and non-None for descriptions/returns).
+    - Step 5 confirmed `test_custom_configuration` (line 267) is unaffected (uses its own custom description string).
+    - Step 5 confirmed `test_empty_configuration` (line 337) is unaffected (uses empty string descriptions).
+    - No test in the file asserts the old wording ("answer as plain text" or "structured response"), so `make test` should succeed without any test file modifications.
