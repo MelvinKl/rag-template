@@ -41,7 +41,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - `test_empty_configuration` (line 337): Uses empty string descriptions — unaffected.
     - No test asserts the old wording ("answer as plain text" or "structured response"), so all tests should pass as-is after Step 4.
 
-- [ ] 6. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+- [x] 6. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass.
