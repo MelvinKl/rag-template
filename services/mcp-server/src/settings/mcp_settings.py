@@ -46,7 +46,7 @@ class MCPSettings(BaseSettings):
             "message": "The message/question to ask the RAG system.",
         }
     )
-    chat_simple_returns: str = Field(default="The answer from the RAG system as plain text.")
+    chat_simple_returns: str = Field(default="List of citation objects, each containing content and metadata.")
     chat_simple_notes: str = Field(default="")
     chat_simple_examples: str = Field(default="")
 
