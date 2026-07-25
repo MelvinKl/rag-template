@@ -51,7 +51,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Step 5 confirmed `test_empty_configuration` (line 337) is unaffected (uses empty string descriptions).
     - No test in the file asserts the old wording ("answer as plain text" or "structured response"), so `make test` should succeed without any test file modifications.
 
-- [ ] 7. Extract duplicated citation simplification logic into a private `_simplify_citations` helper method in `rag_mcp_server.py`.
+- [x] 7. Extract duplicated citation simplification logic into a private `_simplify_citations` helper method in `rag_mcp_server.py`.
   - Acceptance Criteria:
     - Create a new private method `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` that contains the citation simplification logic currently duplicated in both `chat_simple` (lines 58-66) and `chat_with_history` (lines 85-93).
     - The helper method accepts a list of citation objects and returns `list[dict]` with `content` and `metadata` keys.
@@ -63,8 +63,11 @@ It should Not generate the answer to the question, but only Return the sources a
   - Acceptance Criteria:
     - The `chat_with_history` history parameter description (lines 66-69 in `mcp_settings.py`) already includes the format note: `{"role": "user" or "assistant", "message": "the message text"}`.
     - Confirm no further changes are needed to the history parameter description — the PR suggestion is already satisfied.
+    - The `chat_with_history_description` (lines 55-60) already mentions "list of citation objects" and the returns field (line 72-74) is already updated from Step 3.
 
 - [ ] 9. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory.
     - The command exits with a zero status code, indicating all tests pass after the `_simplify_citations` extraction.
+    - The `_simplify_citations` method (lines 76-85 in `rag_mcp_server.py`) is now called by both `chat_simple` (line 57) and `chat_with_history` (line 74), replacing the previously duplicated inline loops.
+    - The helper method accepts a list of citation objects and returns `list[dict]` with `content` and `metadata` keys, maintaining identical behavior to the previous inline implementations.
