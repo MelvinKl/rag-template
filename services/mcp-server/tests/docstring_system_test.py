@@ -255,7 +255,7 @@ def test_generated_docstrings_content(settings, test_class_factory):
 
     # Test chat_with_history docstring
     history_doc = instance.chat_with_history.__doc__
-    assert "Send a message with conversation history" in history_doc
+    assert "Send a message to the RAG system with chat history and get a list of citation objects" in history_doc
     assert "Parameters" in history_doc
     assert "session_id: str" in history_doc
     assert "message: str" in history_doc

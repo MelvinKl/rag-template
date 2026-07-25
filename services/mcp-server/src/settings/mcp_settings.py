@@ -35,9 +35,10 @@ class MCPSettings(BaseSettings):
     # Chat Simple Method Configuration
     chat_simple_description: str = Field(
         default=(
-            "Send a message to the RAG system and get a simple text response.\n\n"
+            "Send a message to the RAG system and get a list of citation objects.\n\n"
+            "Each citation object contains the content of the retrieved text and its metadata.\n"
             "This is the simplest way to interact with the RAG system - just provide a message "
-            "and get back the answer as plain text."
+            "and get back the relevant citations."
         )
     )
     chat_simple_parameter_descriptions: dict[str, str] = Field(
@@ -53,9 +54,9 @@ class MCPSettings(BaseSettings):
     # Chat With History Method Configuration
     chat_with_history_description: str = Field(
         default=(
-            "Send a message with conversation history and get structured response.\n\n"
-            "Provide conversation history as a simple list of dictionaries.\n"
-            "Each history item should have 'role' (either 'user' or 'assistant') and 'message' keys."
+            "Send a message to the RAG system with chat history and get a list of citation objects.\n\n"
+            "This method allows you to maintain conversation context by providing previous "
+            "messages. The response is a list of citation objects, each containing content and metadata."
         )
     )
     chat_with_history_parameter_descriptions: dict[str, str] = Field(
