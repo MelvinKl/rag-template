@@ -54,16 +54,7 @@ class RagMcpServer:
     async def chat_simple(self, session_id: str, message: str) -> list[dict]:
         chat_request = ChatRequest(message=message)
         response = await self._handle_chat(session_id, chat_request)
-        # Simplify citations for easier consumption
-        simplified_citations = []
-        for citation in response.citations:
-            simplified_citations.append(
-                {
-                    "content": citation.page_content,
-                    "metadata": {pair.key: pair.value for pair in citation.metadata},
-                }
-            )
-        return simplified_citations
+        return self._simplify_citations(response.citations)
 
     @extensible_docstring("chat_with_history")
     async def chat_with_history(
@@ -80,10 +71,11 @@ class RagMcpServer:
 
         chat_request = ChatRequest(message=message, history=chat_history)
         response = await self._handle_chat(session_id, chat_request)
+        return self._simplify_citations(response.citations)
 
-        # Simplify citations for easier consumption
+    def _simplify_citations(self, citations) -> list[dict]:
         simplified_citations = []
-        for citation in response.citations:
+        for citation in citations:
             simplified_citations.append(
                 {
                     "content": citation.page_content,
