@@ -59,7 +59,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Refactor `chat_with_history` to call `self._simplify_citations(response.citations)` instead of the inline loop.
     - No behavior change — both methods return the same result as before.
 
-- [ ] 8. Verify the `history` parameter description in `mcp_settings.py` already documents the required format.
+- [x] 8. Verify the `history` parameter description in `mcp_settings.py` already documents the required format.
   - Acceptance Criteria:
     - The `chat_with_history` history parameter description (lines 66-69 in `mcp_settings.py`) already includes the format note: `{"role": "user" or "assistant", "message": "the message text"}`.
     - Confirm no further changes are needed to the history parameter description — the PR suggestion is already satisfied.
@@ -68,6 +68,9 @@ It should Not generate the answer to the question, but only Return the sources a
 - [ ] 9. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory.
-    - The command exits with a zero status code, indicating all tests pass after the `_simplify_citations` extraction.
-    - The `_simplify_citations` method (lines 76-85 in `rag_mcp_server.py`) is now called by both `chat_simple` (line 57) and `chat_with_history` (line 74), replacing the previously duplicated inline loops.
+    - The command exits with a zero status code, indicating all tests pass after the `_simplify_citations` extraction and Step 8 verification.
+    - The `_simplify_citations` method (lines 76-85 in `rag_mcp_server.py`) is called by both `chat_simple` (line 57) and `chat_with_history` (line 74), replacing the previously duplicated inline loops.
     - The helper method accepts a list of citation objects and returns `list[dict]` with `content` and `metadata` keys, maintaining identical behavior to the previous inline implementations.
+    - Step 8 confirmed: the `history` parameter description (lines 66-69 in `mcp_settings.py`) already includes the format note `{"role": "user" or "assistant", "message": "the message text"}`, so no additional changes were made that could affect tests.
+    - `chat_with_history_description` (lines 55-60 in `mcp_settings.py`) already mentions "list of citation objects" and the returns field (lines 72-74) was updated from Step 3 — no changes in Step 8.
+    - `mcp_settings.py` total line count is 76 lines (updated from the original 78-line estimate in Step 3 due to formatting changes from Steps 4-5).
