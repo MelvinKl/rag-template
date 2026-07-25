@@ -65,7 +65,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Confirm no further changes are needed to the history parameter description — the PR suggestion is already satisfied.
     - The `chat_with_history_description` (lines 55-60) already mentions "list of citation objects" and the returns field (line 72-74) is already updated from Step 3.
 
-- [ ] 9. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+- [x] 9. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory.
     - The command exits with a zero status code, indicating all tests pass after the `_simplify_citations` extraction and Step 8 verification.
