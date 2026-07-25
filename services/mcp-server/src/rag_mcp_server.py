@@ -51,15 +51,24 @@ class RagMcpServer:
         self._server.run(transport=self.TRANSPORT, host=self._settings.host, port=self._settings.port)
 
     @extensible_docstring("chat_simple")
-    async def chat_simple(self, session_id: str, message: str) -> str:
+    async def chat_simple(self, session_id: str, message: str) -> list[dict]:
         chat_request = ChatRequest(message=message)
         response = await self._handle_chat(session_id, chat_request)
-        return response.answer
+        # Simplify citations for easier consumption
+        simplified_citations = []
+        for citation in response.citations:
+            simplified_citations.append(
+                {
+                    "content": citation.page_content,
+                    "metadata": {pair.key: pair.value for pair in citation.metadata},
+                }
+            )
+        return simplified_citations
 
     @extensible_docstring("chat_with_history")
     async def chat_with_history(
         self, session_id: str, message: str, history: list[dict[str, str]] = None
-    ) -> dict[str, Any]:
+    ) -> list[dict]:
         # Build chat history if provided
         chat_history = None
         if history:
@@ -81,12 +90,7 @@ class RagMcpServer:
                     "metadata": {pair.key: pair.value for pair in citation.metadata},
                 }
             )
-
-        return {
-            "answer": response.answer,
-            "finish_reason": response.finish_reason,
-            "citations": simplified_citations,
-        }
+        return simplified_citations
 
     def _register_tools(self):
         """Register all MCP tools with the server."""
