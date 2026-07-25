@@ -69,12 +69,7 @@ class MCPSettings(BaseSettings):
         }
     )
     chat_with_history_returns: str = Field(
-        default=(
-            "Response containing:\n"
-            "    - answer: The response text\n"
-            "    - finish_reason: Why the response ended\n"
-            "    - citations: List of source documents used (simplified)"
-        )
+        default="List of citation objects, each containing content and metadata."
     )
     chat_with_history_notes: str = Field(default="")
     chat_with_history_examples: str = Field(default="")

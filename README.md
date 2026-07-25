@@ -119,8 +119,8 @@ The MCP Server is a Model Context Protocol (MCP) server that provides a bridge b
 
 The MCP server runs as a sidecar container alongside the main RAG backend and exposes two main tools:
 
-- `chat_simple`: Basic question-answering without conversation history
-- `chat_with_history`: Advanced chat interface with conversation history and returns structured responses with `answer`, `finish_reason`, and `citations`.
+- `chat_simple`: Basic question-answering without conversation history; returns a list of citation objects (content and metadata).
+- `chat_with_history`: Advanced chat interface with conversation history; returns a list of citation objects (content and metadata).
 
 ##### Configuring Tool Documentation
 
