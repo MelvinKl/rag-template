@@ -50,3 +50,21 @@ It should Not generate the answer to the question, but only Return the sources a
     - Step 5 confirmed `test_custom_configuration` (line 267) is unaffected (uses its own custom description string).
     - Step 5 confirmed `test_empty_configuration` (line 337) is unaffected (uses empty string descriptions).
     - No test in the file asserts the old wording ("answer as plain text" or "structured response"), so `make test` should succeed without any test file modifications.
+
+- [ ] 7. Extract duplicated citation simplification logic into a private `_simplify_citations` helper method in `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - Create a new private method `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` that contains the citation simplification logic currently duplicated in both `chat_simple` (lines 58-66) and `chat_with_history` (lines 85-93).
+    - The helper method accepts a list of citation objects and returns `list[dict]` with `content` and `metadata` keys.
+    - Refactor `chat_simple` to call `self._simplify_citations(response.citations)` instead of the inline loop.
+    - Refactor `chat_with_history` to call `self._simplify_citations(response.citations)` instead of the inline loop.
+    - No behavior change — both methods return the same result as before.
+
+- [ ] 8. Verify the `history` parameter description in `mcp_settings.py` already documents the required format.
+  - Acceptance Criteria:
+    - The `chat_with_history` history parameter description (lines 66-69 in `mcp_settings.py`) already includes the format note: `{"role": "user" or "assistant", "message": "the message text"}`.
+    - Confirm no further changes are needed to the history parameter description — the PR suggestion is already satisfied.
+
+- [ ] 9. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+  - Acceptance Criteria:
+    - Run: `make test` in `services/mcp-server/` directory.
+    - The command exits with a zero status code, indicating all tests pass after the `_simplify_citations` extraction.
