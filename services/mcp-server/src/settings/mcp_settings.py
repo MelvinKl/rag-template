@@ -74,4 +74,3 @@ class MCPSettings(BaseSettings):
     )
     chat_with_history_notes: str = Field(default="")
     chat_with_history_examples: str = Field(default="")
-
