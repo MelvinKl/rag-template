@@ -13,7 +13,7 @@ from rag_backend_client.openapi_client.models.chat_history_message import (
     ChatHistoryMessage,
 )
 from rag_backend_client.openapi_client.models.chat_role import ChatRole
-from typing import Any
+from rag_backend_client.openapi_client.models.information_piece import InformationPiece
 
 from docstring_system import (
     DocstringTemplateSystem,
@@ -73,7 +73,7 @@ class RagMcpServer:
         response = await self._handle_chat(session_id, chat_request)
         return self._simplify_citations(response.citations)
 
-    def _simplify_citations(self, citations) -> list[dict]:
+    def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
         simplified_citations = []
         for citation in citations:
             simplified_citations.append(

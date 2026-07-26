@@ -75,7 +75,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - `chat_with_history_description` (lines 55-60 in `mcp_settings.py`) already mentions "list of citation objects" and the returns field (lines 72-74) was updated from Step 3 — no changes in Step 8.
     - `mcp_settings.py` total line count is 76 lines (updated from the original 78-line estimate in Step 3 due to formatting changes from Steps 4-5).
 
-- [ ] 10. Add type hint to `_simplify_citations` parameter in `rag_mcp_server.py`.
+- [x] 10. Add type hint to `_simplify_citations` parameter in `rag_mcp_server.py`.
   - Acceptance Criteria:
     - Import `InformationPiece` from `rag_backend_client.openapi_client.models.information_piece` in `rag_mcp_server.py`.
     - Annotate the `citations` parameter in `_simplify_citations(self, citations)` at line 76 as `list[InformationPiece]`.
@@ -83,12 +83,14 @@ It should Not generate the answer to the question, but only Return the sources a
 
 - [ ] 11. Remove unused `from typing import Any` import in `rag_mcp_server.py`.
   - Acceptance Criteria:
-    - The import at line 16 (`from typing import Any`) is removed.
-    - No other usage of `Any` exists in the file (confirmed: `chat_with_history` return type is `list[dict]`, not `dict[str, Any]`).
+    - After Step 10, `rag_mcp_server.py` does not contain a `from typing import Any` import — line 16 is now the `InformationPiece` import added in Step 10. No removal is needed.
+    - Grep for `from typing import Any` returns no matches; confirmed no usage of `Any` exists anywhere in the file.
+    - File is 100 lines total. All imports (lines 1-22) and method signatures have been verified.
 
 - [ ] 12. Verify `mcp_settings.py` has a trailing newline for POSIX compliance.
   - Acceptance Criteria:
-    - `services/mcp-server/src/settings/mcp_settings.py` already ends with a newline character (byte `0a` at end of file).
+    - `services/mcp-server/src/settings/mcp_settings.py` ends with byte `0a` (confirmed via `xxd | tail -1` showing `00000af0: 0a`).
+    - File is 76 lines long (line 76 is `chat_with_history_examples` with no trailing content after the newline).
     - No change needed — confirm and mark as satisfied.
 
 - [ ] 13. Update test factory stubs in `docstring_system_test.py` to match actual return types.
@@ -96,11 +98,14 @@ It should Not generate the answer to the question, but only Return the sources a
     - In `test_class_factory` (line 38): change `chat_simple` return type annotation from `-> str` to `-> list[dict]`.
     - In `test_class_factory` (line 42): change `chat_with_history` return type annotation from `-> dict` to `-> list[dict]`.
     - Existing docstring assertions remain valid:
-      - Line 254 (`assert "str" in simple_doc`): still passes because `session_id: str` and `message: str` parameters contain "str".
+      - Line 254 (`assert "str" in simple_doc`): still passes because `session_id: str` and `message: str` parameters contain "str" in the rendered docstring.
       - Line 264 (`assert "dict" in history_doc`): still passes because `list[dict]` contains the substring "dict".
-      - Line 290 (`assert "str" in simple_doc` in `test_custom_configuration`): still passes for the same reason (parameter type annotations contain "str").
+      - Line 290 (`assert "str" in simple_doc` in `test_custom_configuration`): still passes because parameter type annotations in the test class contain "str".
 
 - [ ] 14. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
-    - Run: `make test` in `services/mcp-server/` directory.
+    - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 10-13.
+    - Step 11 confirmed: No `from typing import Any` import exists to remove — no code change.
+    - Step 12 confirmed: `mcp_settings.py` already has trailing newline — no code change.
+    - Step 13 changes (test return type annotations) do not affect test assertions (see Step 13 acceptance criteria for details).
