@@ -45,7 +45,7 @@ def test_class_factory():
 
             @extensible_docstring("chat_with_history")
             def chat_with_history(
-                self, session_id: str, message: str, history: list = None
+                self, session_id: str, message: str, history: list[dict[str, str]] = None
             ) -> list[dict]:
                 return [
                     {
