@@ -151,7 +151,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - No refactoring is performed as the current approach is clear and maintainable for test purposes.
     - This addresses the minor note from PR review comments about test factory duplication.
 
-- [ ] 17. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+- [x] 17. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass.
