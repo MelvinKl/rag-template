@@ -74,3 +74,33 @@ It should Not generate the answer to the question, but only Return the sources a
     - Step 8 confirmed: the `history` parameter description (lines 66-69 in `mcp_settings.py`) already includes the format note `{"role": "user" or "assistant", "message": "the message text"}`, so no additional changes were made that could affect tests.
     - `chat_with_history_description` (lines 55-60 in `mcp_settings.py`) already mentions "list of citation objects" and the returns field (lines 72-74) was updated from Step 3 — no changes in Step 8.
     - `mcp_settings.py` total line count is 76 lines (updated from the original 78-line estimate in Step 3 due to formatting changes from Steps 4-5).
+
+- [ ] 10. Add type hint to `_simplify_citations` parameter in `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - Import `InformationPiece` from `rag_backend_client.openapi_client.models.information_piece` in `rag_mcp_server.py`.
+    - Annotate the `citations` parameter in `_simplify_citations(self, citations)` at line 76 as `list[InformationPiece]`.
+    - The return type `list[dict]` remains unchanged.
+
+- [ ] 11. Remove unused `from typing import Any` import in `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - The import at line 16 (`from typing import Any`) is removed.
+    - No other usage of `Any` exists in the file (confirmed: `chat_with_history` return type is `list[dict]`, not `dict[str, Any]`).
+
+- [ ] 12. Verify `mcp_settings.py` has a trailing newline for POSIX compliance.
+  - Acceptance Criteria:
+    - `services/mcp-server/src/settings/mcp_settings.py` already ends with a newline character (byte `0a` at end of file).
+    - No change needed — confirm and mark as satisfied.
+
+- [ ] 13. Update test factory stubs in `docstring_system_test.py` to match actual return types.
+  - Acceptance Criteria:
+    - In `test_class_factory` (line 38): change `chat_simple` return type annotation from `-> str` to `-> list[dict]`.
+    - In `test_class_factory` (line 42): change `chat_with_history` return type annotation from `-> dict` to `-> list[dict]`.
+    - Existing docstring assertions remain valid:
+      - Line 254 (`assert "str" in simple_doc`): still passes because `session_id: str` and `message: str` parameters contain "str".
+      - Line 264 (`assert "dict" in history_doc`): still passes because `list[dict]` contains the substring "dict".
+      - Line 290 (`assert "str" in simple_doc` in `test_custom_configuration`): still passes for the same reason (parameter type annotations contain "str").
+
+- [ ] 14. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+  - Acceptance Criteria:
+    - Run: `make test` in `services/mcp-server/` directory.
+    - The command exits with a zero status code, indicating all tests pass after Steps 10-13.
