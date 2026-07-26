@@ -74,15 +74,13 @@ class RagMcpServer:
         return self._simplify_citations(response.citations)
 
     def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
-        simplified_citations = []
-        for citation in citations:
-            simplified_citations.append(
-                {
-                    "content": citation.page_content,
-                    "metadata": {pair.key: pair.value for pair in citation.metadata},
-                }
-            )
-        return simplified_citations
+        return [
+            {
+                "content": citation.page_content,
+                "metadata": {pair.key: pair.value for pair in citation.metadata},
+            }
+            for citation in citations
+        ]
 
     def _register_tools(self):
         """Register all MCP tools with the server."""

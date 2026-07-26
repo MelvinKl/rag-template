@@ -92,7 +92,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - `services/mcp-server/src/settings/mcp_settings.py` ends with byte `0a` (confirmed via `xxd | tail -1` showing `00000af0: 0a`).
     - File is 76 lines long (line 76 is `chat_with_history_examples: str = Field(default="")` with no trailing content after the newline).
     - No change needed — POSIX compliant trailing newline confirmed.
-  - Status: PASS — Removed extra trailing blank line. File now ends with single `0a` byte, POSIX compliant.
+    - Status: PASS — Removed extra trailing blank line. File now ends with single `0a` byte, POSIX compliant.
 
 - [x] 13. Update test factory stubs in `docstring_system_test.py` to match actual return types.
   - Acceptance Criteria:
@@ -113,4 +113,47 @@ It should Not generate the answer to the question, but only Return the sources a
     - `test_generated_docstrings_content` (line 252): assertion at line 258 (`"Send a message to the RAG system" in simple_doc`) matches updated `chat_simple_description`; assertion at line 267 (`"Send a message to the RAG system with chat history and get a list of citation objects" in history_doc`) matches updated `chat_with_history_description`.
     - `test_default_settings` (line 182): only checks types and non-None for descriptions/returns — unaffected.
     - `test_custom_configuration` (line 276): uses its own custom description string — unaffected.
-    - `test_empty_configuration` (line 355): uses empty string descriptions — unaffected.
+    - `test_empty_configuration` (line 337): uses empty string descriptions — unaffected.
+
+- [x] 15. Refactor `_simplify_citations` method to use list comprehension instead of loop-and-append pattern.
+  - Acceptance Criteria:
+    - Modify `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` (line 76) to use a list comprehension.
+    - Replace the current loop-and-append implementation:
+      ```python
+      def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
+          simplified_citations = []
+          for citation in citations:
+              simplified_citations.append(
+                  {
+                      "content": citation.page_content,
+                      "metadata": {pair.key: pair.value for pair in citation.metadata},
+                  }
+              )
+          return simplified_citations
+      ```
+    - With a list comprehension:
+      ```python
+      def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
+          return [
+              {
+                  "content": citation.page_content,
+                  "metadata": {pair.key: pair.value for pair in citation.metadata},
+              }
+              for citation in citations
+          ]
+      ```
+    - Behavior remains identical — both implementations return the same result.
+
+- [x] 16. Consider refactoring test factory in `docstring_system_test.py` to reduce duplication (low priority).
+  - Acceptance Criteria:
+    - The test factory in `tests/docstring_system_test.py` (lines 38-55) was reviewed for potential duplication of the citation dictionary structure.
+    - While the structure `{ "content": ..., "metadata": {} }` appears in both `chat_simple` and `chat_with_history` factory methods, this duplication is minor and acceptable for test code.
+    - No refactoring is performed as the current approach is clear and maintainable for test purposes.
+    - This addresses the minor note from PR review comments about test factory duplication.
+
+- [ ] 17. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+  - Acceptance Criteria:
+    - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
+    - The command exits with a zero status code, indicating all tests pass.
+
+(End of file)
