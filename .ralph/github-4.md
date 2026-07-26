@@ -81,7 +81,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Annotate the `citations` parameter in `_simplify_citations(self, citations)` at line 76 as `list[InformationPiece]`.
     - The return type `list[dict]` remains unchanged.
 
-- [ ] 11. Remove unused `from typing import Any` import in `rag_mcp_server.py`.
+- [x] 11. Remove unused `from typing import Any` import in `rag_mcp_server.py`.
   - Acceptance Criteria:
     - After Step 10, `rag_mcp_server.py` does not contain a `from typing import Any` import — line 16 is now the `InformationPiece` import added in Step 10. No removal is needed.
     - Grep for `from typing import Any` returns no matches; confirmed no usage of `Any` exists anywhere in the file.
@@ -90,22 +90,26 @@ It should Not generate the answer to the question, but only Return the sources a
 - [ ] 12. Verify `mcp_settings.py` has a trailing newline for POSIX compliance.
   - Acceptance Criteria:
     - `services/mcp-server/src/settings/mcp_settings.py` ends with byte `0a` (confirmed via `xxd | tail -1` showing `00000af0: 0a`).
-    - File is 76 lines long (line 76 is `chat_with_history_examples` with no trailing content after the newline).
-    - No change needed — confirm and mark as satisfied.
+    - File is 76 lines long (line 76 is `chat_with_history_examples: str = Field(default="")` with no trailing content after the newline).
+    - No change needed — POSIX compliant trailing newline confirmed.
 
 - [ ] 13. Update test factory stubs in `docstring_system_test.py` to match actual return types.
   - Acceptance Criteria:
-    - In `test_class_factory` (line 38): change `chat_simple` return type annotation from `-> str` to `-> list[dict]`.
-    - In `test_class_factory` (line 42): change `chat_with_history` return type annotation from `-> dict` to `-> list[dict]`.
+    - In `test_class_factory` (line 38): `chat_simple` return type annotation is already `-> list[dict]` — no change needed.
+    - In `test_class_factory` (line 49): `chat_with_history` return type annotation is already `-> list[dict]` — no change needed.
     - Existing docstring assertions remain valid:
-      - Line 254 (`assert "str" in simple_doc`): still passes because `session_id: str` and `message: str` parameters contain "str" in the rendered docstring.
-      - Line 264 (`assert "dict" in history_doc`): still passes because `list[dict]` contains the substring "dict".
-      - Line 290 (`assert "str" in simple_doc` in `test_custom_configuration`): still passes because parameter type annotations in the test class contain "str".
+      - Line 263 (`assert "str" in simple_doc`): passes because `session_id: str` and `message: str` parameter type annotations contain "str" in the rendered docstring.
+      - Line 273 (`assert "list" in history_doc`): passes because the function return type `list[dict]` contains the substring "list".
+      - Line 299 (`assert "str" in simple_doc` in `test_custom_configuration`): passes because parameter type annotations contain "str".
 
 - [ ] 14. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 10-13.
     - Step 11 confirmed: No `from typing import Any` import exists to remove — no code change.
-    - Step 12 confirmed: `mcp_settings.py` already has trailing newline — no code change.
-    - Step 13 changes (test return type annotations) do not affect test assertions (see Step 13 acceptance criteria for details).
+    - Step 12 confirmed: `mcp_settings.py` already has POSIX trailing newline — no code change.
+    - Step 13 confirmed: Test factory stubs already use `list[dict]` return types — no code change needed.
+    - `test_generated_docstrings_content` (line 252): assertion at line 258 (`"Send a message to the RAG system" in simple_doc`) matches updated `chat_simple_description`; assertion at line 267 (`"Send a message to the RAG system with chat history and get a list of citation objects" in history_doc`) matches updated `chat_with_history_description`.
+    - `test_default_settings` (line 182): only checks types and non-None for descriptions/returns — unaffected.
+    - `test_custom_configuration` (line 276): uses its own custom description string — unaffected.
+    - `test_empty_configuration` (line 355): uses empty string descriptions — unaffected.
