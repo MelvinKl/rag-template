@@ -156,4 +156,29 @@ It should Not generate the answer to the question, but only Return the sources a
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass.
 
-(End of file)
+- [ ] 18. Add brief examples of the new return shape to `chat_simple_examples` and `chat_with_history_examples` fields in `mcp_settings.py`.
+  - Acceptance Criteria:
+    - Update `chat_simple_examples` (line 52 in `mcp_settings.py`) from `default=""` to a brief example showing the list-of-citation-objects return format, e.g. `'Example: [{"content": "retrieved text snippet", "metadata": {"source": "doc.pdf"}}]'`.
+    - Update `chat_with_history_examples` (line 76 in `mcp_settings.py`) from `default=""` to a similar brief example showing the list-of-citation-objects return format.
+    - This helps MCP consumers understand the output format without reading source code.
+
+- [ ] 19. Add `from __future__ import annotations` to `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - Add `from __future__ import annotations` as the first import in `services/mcp-server/src/rag_mcp_server.py` (after the module docstring, before other imports).
+    - This defers annotation evaluation and is a common Python best practice that would make the `list[InformationPiece]` type hint work cleanly across Python versions.
+
+- [ ] 20. Run `make test` from `services/mcp-server/` and confirm it succeeds.
+  - Acceptance Criteria:
+    - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
+    - The command exits with a zero status code, indicating all tests pass after Steps 18-19.
+    - `from __future__ import annotations` does not affect runtime behavior — only annotation evaluation — so existing tests should be unaffected.
+    - The updated examples fields are only used for documentation/settings defaults — no test assertions check their content.
+
+- [ ] 21. Fix trailing newline in `.ralph/github-4.md` for POSIX compliance.
+  - Acceptance Criteria:
+    - Ensure `.ralph/github-4.md` ends with a newline character (`0a` byte) as its final byte.
+    - This is a POSIX compliance requirement and is also noted in the PR review comments.
+
+- [ ] 22. Run `make test` and confirm it succeeds.
+  - Acceptance Criteria:
+    - `make test` exits successfully.
