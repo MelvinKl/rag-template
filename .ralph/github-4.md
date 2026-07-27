@@ -236,7 +236,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - `test_default_settings` (line 195) asserts `"content" in settings.chat_simple_examples` — still passes because `_CITATION_EXAMPLE` contains `"content"`. Similarly line 203 for `chat_with_history_examples`.
 
 - [x] 26. Improve `test_default_settings` assertion fragility in `docstring_system_test.py`.
-    - [ ] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
+    - [x] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
         - Acceptance Criteria:
           - In the list comprehension in `_simplify_citations`, guard against `citation.metadata` being `None` by using an empty dict if it is None.
           - Change the line:
@@ -253,7 +253,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - This makes the assertions less fragile if the example text changes (e.g., if the word "content" appeared in non-key contexts).
     - Other tests in the file are unaffected: `test_generated_docstrings_content` (line 254), `test_custom_configuration` (line 278), `test_function_execution_still_works` (line 309), `test_missing_settings_attributes` (line 333), `test_empty_configuration` (line 357) — none of these assert on the examples field.
 
-    - [ ] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
+    - [x] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
         - Acceptance Criteria:
           - In the list comprehension in `_simplify_citations`, guard against `citation.metadata` being `None` by using an empty dict if it is None.
           - Change the line:
@@ -262,7 +262,7 @@ It should Not generate the answer to the question, but only Return the sources a
                 "metadata": {pair.key: pair.value for pair in citation.metadata} if citation.metadata else {},
           - This prevents an error when iterating over None.
           - Both `chat_simple` and `chat_with_history` continue to behave identically for non-None metadata.
-- [ ] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
+- [x] 27. Guard against `None` metadata in individual citations in `_simplify_citations` in `rag_mcp_server.py`.
     - Acceptance Criteria:
       - In the list comprehension in `_simplify_citations`, guard against `citation.metadata` being `None` by using an empty dict if it is None.
       - Change the line:

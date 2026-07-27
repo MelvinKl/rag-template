@@ -57,7 +57,7 @@ class RagMcpServer:
         return [
             {
                 "content": citation.page_content,
-                "metadata": {pair.key: pair.value for pair in citation.metadata},
+                "metadata": {pair.key: pair.value for pair in (citation.metadata or [])},
             }
             for citation in citations
         ]
