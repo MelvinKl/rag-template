@@ -197,10 +197,11 @@ It should Not generate the answer to the question, but only Return the sources a
       - `test_generated_docstrings_content` assertions (`docstring_system_test.py:260,269`) match the updated description prefixes from Step 4.
       - All 22 steps are now complete — no further changes needed.
 
-- [x] 23. Guard against `None` citations in `_simplify_citations` in `rag_mcp_server.py`.
+- [ ] 23. Guard against `None` citations in `_simplify_citations` in `rag_mcp_server.py`.
     - Acceptance Criteria:
-      - Add `if not citations: return []` at the top of `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` (line 77).
+      - Add `if citations is None: return []` at the top of `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` (line 77).
       - This prevents `for citation in citations` from failing if the backend returns `None` for an empty result.
+      - Using `is None` check ensures we don't treat an empty list `[]` as falsy.
       - The existing list comprehension body remains unchanged.
       - Both `chat_simple` and `chat_with_history` continue to behave identically for non-None inputs.
 
@@ -229,7 +230,21 @@ It should Not generate the answer to the question, but only Return the sources a
         '  }\n'
         ']'
         ```
-      - Extract the shared example text into a module-level constant (e.g., `_CITATION_EXAMPLE`) defined before the `MCPSettings` class (before line 7).
+      - Extract the shared example text into a module-level constant (e.g., `_CITATION_EXAMPLE`) defined before the `MCPSettings` class (before line 7) using a triple-quoted string with a trailing newline:
+        ```python
+        _CITATION_EXAMPLE = """Example return value:
+[
+  {
+    "content": "Retrieved text snippet from the document...",
+    "metadata": {"source": "document.pdf", "page": 1}
+  },
+  {
+    "content": "Another relevant text snippet...",
+    "metadata": {"source": "guide.md", "page": 3}
+  }
+]
+"""
+        ```
       - Update both `chat_simple_examples` (line 52) and `chat_with_history_examples` (line 90) to `default=_CITATION_EXAMPLE` referencing the constant.
       - No behavior change — the default values remain identical strings.
       - After extraction, `mcp_settings.py` will have fewer total lines because each duplicated 13-line block is replaced by a single-line reference.
@@ -289,6 +304,17 @@ It should Not generate the answer to the question, but only Return the sources a
       - `rag_mcp_server.py` is 101 lines; `mcp_settings.py` is 90 lines; `docstring_system_test.py` is 388 lines.
 
 - [x] 31. Run `make test` and confirm it succeeds.
+    - Acceptance Criteria:
+      - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
+      - The command exits with a zero status code, indicating all tests pass.
+
+- [x] 32. Remove backup file `.ralph/github-4.md.bak`.
+    - Acceptance Criteria:
+      - Remove the backup file `.ralph/github-4.md.bak` that was created during the PR review process.
+      - This file should not be committed to the repository as noted in the PR review comments.
+      - Verify the file is removed using `ls -la .ralph/`.
+
+- [x] 33. Run `make test` and confirm it succeeds.
     - Acceptance Criteria:
       - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
       - The command exits with a zero status code, indicating all tests pass.
