@@ -1,4 +1,5 @@
 """Module for configuring and initializing the MCP server."""
+from __future__ import annotations
 
 import logging
 
