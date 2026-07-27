@@ -75,6 +75,8 @@ class RagMcpServer:
         return self._simplify_citations(response.citations)
 
     def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
+        if not citations:
+            return []
         return [
             {
                 "content": citation.page_content,
