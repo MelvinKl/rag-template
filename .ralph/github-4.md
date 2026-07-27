@@ -196,3 +196,46 @@ It should Not generate the answer to the question, but only Return the sources a
     - Step 18 examples (`mcp_settings.py:52-66`, `mcp_settings.py:90-103`) only affect documentation defaults — `test_default_settings` (`docstring_system_test.py:195,203`) asserts `"content" in settings.chat_simple_examples` which still holds.
     - `test_generated_docstrings_content` assertions (`docstring_system_test.py:260,269`) match the updated description prefixes from Step 4.
     - All 22 steps are now complete — no further changes needed.
+
+- [ ] 23. Guard against `None` citations in `_simplify_citations` in `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - Add `if not citations: return []` at the top of `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` (line 77).
+    - This prevents `for citation in citations` from failing if the backend returns `None` for an empty result.
+    - The existing list comprehension body remains unchanged.
+    - Both `chat_simple` and `chat_with_history` continue to behave identically for non-None inputs.
+
+- [ ] 24. Move `_simplify_citations` before the public methods that use it in `rag_mcp_server.py`.
+  - Acceptance Criteria:
+    - Move the `_simplify_citations` method definition (currently at line 77) to before `chat_simple` (line 54) and `chat_with_history` (line 60) for better readability.
+    - The method should be placed after `run()` (line 44) and before `chat_simple` (line 54).
+    - No behavior change — purely a code organization improvement.
+
+- [ ] 25. Extract duplicated example strings to a module-level constant in `mcp_settings.py`.
+  - Acceptance Criteria:
+    - The example strings in `chat_simple_examples` (lines 52-66) and `chat_with_history_examples` (lines 90-103) are identical 12-line blocks.
+    - Extract the shared example text into a module-level constant (e.g., `_CITATION_EXAMPLE`) defined before the `MCPSettings` class.
+    - Update both `chat_simple_examples` and `chat_with_history_examples` to reference the constant.
+    - No behavior change — the default values remain identical.
+
+- [ ] 26. Improve `test_default_settings` assertion fragility in `docstring_system_test.py`.
+  - Acceptance Criteria:
+    - In `test_default_settings` (`tests/docstring_system_test.py:195`), replace `assert "content" in settings.chat_simple_examples` with `assert '"content":' in settings.chat_simple_examples` (checking for the key with colon).
+    - Similarly replace `assert "content" in settings.chat_with_history_examples` (line 203) with `assert '"content":' in settings.chat_with_history_examples`.
+    - This makes the assertion less fragile if the example text changes.
+
+- [ ] 27. Ensure `.ralph/github-4.md` has a trailing newline for POSIX compliance.
+  - Acceptance Criteria:
+    - Verify `.ralph/github-4.md` ends with a newline character (`0a` byte).
+    - Already confirmed: `xxd .ralph/github-4.md | tail -1` shows the file ends with `0a`.
+    - No change needed — POSIX compliant trailing newline already present.
+
+- [ ] 28. Run `make test` and confirm it succeeds.
+  - Acceptance Criteria:
+    - Run `make test` in `services/mcp-server/` directory.
+    - The command exits with a zero status code, indicating all tests pass after Steps 23-26.
+    - Step 23: Adding `if not citations: return []` guard is defensive and does not affect existing tests (tests never pass `None` citations).
+    - Step 24: Reordering methods is a pure code organization change with no behavior impact.
+    - Step 25: Extracting the example constant does not change the default values — `test_default_settings` assertions at lines 195 and 203 still pass.
+    - Step 26: Updated assertions check for `"content":` (with colon) which is present in the example strings — assertions pass.
+    - `test_generated_docstrings_content` assertions match updated description prefixes.
+    - `test_custom_configuration` and `test_empty_configuration` are unaffected.
