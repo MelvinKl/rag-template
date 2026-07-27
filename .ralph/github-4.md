@@ -162,7 +162,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Update `chat_with_history_examples` (line 76 in `mcp_settings.py`) from `default=""` to a similar brief example showing the list-of-citation-objects return format.
     - This helps MCP consumers understand the output format without reading source code.
 
-- [ ] 19. Add `from __future__ import annotations` to `rag_mcp_server.py`.
+- [x] 19. Add `from __future__ import annotations` to `rag_mcp_server.py`.
   - Acceptance Criteria:
     - Add `from __future__ import annotations` as the first import in `services/mcp-server/src/rag_mcp_server.py` (after the module docstring, before other imports).
     - The module docstring is on lines 1-2 (`"""Module for configuring and initializing the MCP server."""`). The `from __future__ import annotations` import should be inserted at line 3, before the existing `import logging` (currently line 3).
@@ -173,18 +173,24 @@ It should Not generate the answer to the question, but only Return the sources a
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 18-19.
-    - `from __future__ import annotations` does not affect runtime behavior — only annotation evaluation — so existing tests should be unaffected.
-    - The updated examples fields (Step 18) are only used for documentation/settings defaults — `test_default_settings` (line 182 in `docstring_system_test.py`) checks `isinstance(settings.chat_simple_examples, str)` and `assert "content" in settings.chat_simple_examples`, both of which still pass with the updated example string.
-    - The `from __future__ import annotations` import on line 3 of `rag_mcp_server.py` does not affect test behavior since tests import from `src.settings.mcp_settings` and `src.docstring_system`, not from `rag_mcp_server.py` directly.
+    - `from __future__ import annotations` on line 2 of `rag_mcp_server.py` does not affect runtime behavior — only annotation evaluation — so existing tests are unaffected.
+    - The updated examples fields from Step 18 (`chat_simple_examples` at `mcp_settings.py:52-66`, `chat_with_history_examples` at `mcp_settings.py:90-103`) are only used for documentation/settings defaults.
+    - `test_default_settings` (`docstring_system_test.py:182`): checks `isinstance(settings.chat_simple_examples, str)` (line 194) and `assert "content" in settings.chat_simple_examples` (line 195) — both still pass because the updated example string still contains `"content"`. Similarly `assert "content" in settings.chat_with_history_examples` (line 203) still passes.
+    - `test_generated_docstrings_content` (`docstring_system_test.py:254`): assertions at lines 260, 269 match updated `chat_simple_description` and `chat_with_history_description` prefixes — no change from Step 19.
+    - `test_custom_configuration` (`docstring_system_test.py:278`): uses its own custom description string — unaffected.
+    - `test_empty_configuration` (`docstring_system_test.py:357`): uses empty string descriptions — unaffected.
+    - The `from __future__ import annotations` import does not affect test behavior since tests import from `src.settings.mcp_settings` and `src.docstring_system`, not from `rag_mcp_server.py` directly.
 
 - [ ] 21. Fix trailing newline in `.ralph/github-4.md` for POSIX compliance.
   - Acceptance Criteria:
     - Ensure `.ralph/github-4.md` ends with a newline character (`0a` byte) as its final byte.
-    - Verified: `xxd .ralph/github-4.md | tail -1` shows `00003f10: 6c79 2e0a` — the file already ends with `0a` (POSIX compliant).
+    - Verified: `xxd .ralph/github-4.md | tail -1` shows `00004460: 2062 6568 6176 696f 722e 0a` — the file already ends with `0a` (POSIX compliant).
     - No change needed — the file already has the correct trailing newline.
 
 - [ ] 22. Run `make test` and confirm it succeeds.
   - Acceptance Criteria:
     - `make test` exits successfully from the `services/mcp-server/` directory.
     - This is the final verification after all code changes (Steps 18-19) are complete.
-    - All tests should pass since: (a) Step 18 examples only affect documentation defaults, not test assertions; (b) Step 19's `from __future__ import annotations` does not change runtime behavior.
+    - All tests should pass since: (a) Step 18 examples (`mcp_settings.py:52-66`, `mcp_settings.py:90-103`) only affect documentation defaults — `test_default_settings` (`docstring_system_test.py:195,203`) asserts `"content" in settings.chat_simple_examples` which still holds; (b) Step 19's `from __future__ import annotations` (`rag_mcp_server.py:2`) does not change runtime behavior, only annotation evaluation.
+    - The `test_generated_docstrings_content` assertions (`docstring_system_test.py:260,269`) still match the updated description prefixes from Step 4.
+    - Total test file is 388 lines; total settings file is 104 lines; total server file is 99 lines.
