@@ -156,7 +156,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass.
 
-- [ ] 18. Add brief examples of the new return shape to `chat_simple_examples` and `chat_with_history_examples` fields in `mcp_settings.py`.
+- [x] 18. Add brief examples of the new return shape to `chat_simple_examples` and `chat_with_history_examples` fields in `mcp_settings.py`.
   - Acceptance Criteria:
     - Update `chat_simple_examples` (line 52 in `mcp_settings.py`) from `default=""` to a brief example showing the list-of-citation-objects return format, e.g. `'Example: [{"content": "retrieved text snippet", "metadata": {"source": "doc.pdf"}}]'`.
     - Update `chat_with_history_examples` (line 76 in `mcp_settings.py`) from `default=""` to a similar brief example showing the list-of-citation-objects return format.
@@ -165,20 +165,26 @@ It should Not generate the answer to the question, but only Return the sources a
 - [ ] 19. Add `from __future__ import annotations` to `rag_mcp_server.py`.
   - Acceptance Criteria:
     - Add `from __future__ import annotations` as the first import in `services/mcp-server/src/rag_mcp_server.py` (after the module docstring, before other imports).
+    - The module docstring is on lines 1-2 (`"""Module for configuring and initializing the MCP server."""`). The `from __future__ import annotations` import should be inserted at line 3, before the existing `import logging` (currently line 3).
     - This defers annotation evaluation and is a common Python best practice that would make the `list[InformationPiece]` type hint work cleanly across Python versions.
+    - The project targets Python 3.11+ (`pyproject.toml` line 16: `python = "^3.11"`), so `list[InformationPiece]` already works natively, but `from __future__ import annotations` is still best practice for forward compatibility.
 
 - [ ] 20. Run `make test` from `services/mcp-server/` and confirm it succeeds.
   - Acceptance Criteria:
     - Run: `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 18-19.
     - `from __future__ import annotations` does not affect runtime behavior — only annotation evaluation — so existing tests should be unaffected.
-    - The updated examples fields are only used for documentation/settings defaults — no test assertions check their content.
+    - The updated examples fields (Step 18) are only used for documentation/settings defaults — `test_default_settings` (line 182 in `docstring_system_test.py`) checks `isinstance(settings.chat_simple_examples, str)` and `assert "content" in settings.chat_simple_examples`, both of which still pass with the updated example string.
+    - The `from __future__ import annotations` import on line 3 of `rag_mcp_server.py` does not affect test behavior since tests import from `src.settings.mcp_settings` and `src.docstring_system`, not from `rag_mcp_server.py` directly.
 
 - [ ] 21. Fix trailing newline in `.ralph/github-4.md` for POSIX compliance.
   - Acceptance Criteria:
     - Ensure `.ralph/github-4.md` ends with a newline character (`0a` byte) as its final byte.
-    - This is a POSIX compliance requirement and is also noted in the PR review comments.
+    - Verified: `xxd .ralph/github-4.md | tail -1` shows `00003f10: 6c79 2e0a` — the file already ends with `0a` (POSIX compliant).
+    - No change needed — the file already has the correct trailing newline.
 
 - [ ] 22. Run `make test` and confirm it succeeds.
   - Acceptance Criteria:
-    - `make test` exits successfully.
+    - `make test` exits successfully from the `services/mcp-server/` directory.
+    - This is the final verification after all code changes (Steps 18-19) are complete.
+    - All tests should pass since: (a) Step 18 examples only affect documentation defaults, not test assertions; (b) Step 19's `from __future__ import annotations` does not change runtime behavior.

@@ -191,14 +191,16 @@ def test_default_settings(settings):
     assert isinstance(settings.chat_simple_parameter_descriptions, dict)
     assert isinstance(settings.chat_simple_returns, str)
     assert settings.chat_simple_notes == ""
-    assert settings.chat_simple_examples == ""
+    assert isinstance(settings.chat_simple_examples, str)
+    assert "content" in settings.chat_simple_examples
 
     # Test chat_with_history settings
     assert settings.chat_with_history_description is not None
     assert isinstance(settings.chat_with_history_parameter_descriptions, dict)
     assert isinstance(settings.chat_with_history_returns, str)
     assert settings.chat_with_history_notes == ""
-    assert settings.chat_with_history_examples == ""
+    assert isinstance(settings.chat_with_history_examples, str)
+    assert "content" in settings.chat_with_history_examples
 
 
 def test_parameter_descriptions():
