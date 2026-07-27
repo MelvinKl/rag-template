@@ -235,7 +235,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - After extraction, `mcp_settings.py` will have fewer total lines because each duplicated 13-line block is replaced by a single-line reference.
     - `test_default_settings` (line 195) asserts `"content" in settings.chat_simple_examples` — still passes because `_CITATION_EXAMPLE` contains `"content"`. Similarly line 203 for `chat_with_history_examples`.
 
-- [ ] 26. Improve `test_default_settings` assertion fragility in `docstring_system_test.py`.
+- [x] 26. Improve `test_default_settings` assertion fragility in `docstring_system_test.py`.
   - Acceptance Criteria:
     - After Step 25, `mcp_settings.py` is 90 lines; `_CITATION_EXAMPLE` is at lines 6-18; `chat_simple_examples` uses `default=_CITATION_EXAMPLE` at line 66; `chat_with_history_examples` uses `default=_CITATION_EXAMPLE` at line 90.
     - In `test_default_settings` (`services/mcp-server/tests/docstring_system_test.py:195`), replace `assert "content" in settings.chat_simple_examples` with `assert '"content":' in settings.chat_simple_examples` (checking for the JSON key with colon).
@@ -244,13 +244,13 @@ It should Not generate the answer to the question, but only Return the sources a
     - This makes the assertions less fragile if the example text changes (e.g., if the word "content" appeared in non-key contexts).
     - Other tests in the file are unaffected: `test_generated_docstrings_content` (line 254), `test_custom_configuration` (line 278), `test_function_execution_still_works` (line 309), `test_missing_settings_attributes` (line 333), `test_empty_configuration` (line 357) — none of these assert on the examples field.
 
-- [ ] 27. Ensure `.ralph/github-4.md` has a trailing newline for POSIX compliance.
+- [x] 27. Ensure `.ralph/github-4.md` has a trailing newline for POSIX compliance.
   - Acceptance Criteria:
     - Verify `.ralph/github-4.md` ends with a newline character (`0a` byte).
     - File is currently 270 lines (after Step 25 checked and this step's acceptance criteria updated).
     - No change expected — the file already ends with a trailing newline from prior steps.
 
-- [ ] 28. Run `make test` and confirm it succeeds.
+- [x] 28. Run `make test` and confirm it succeeds.
   - Acceptance Criteria:
     - Run `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 25-26.
