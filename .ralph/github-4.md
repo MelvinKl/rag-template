@@ -197,7 +197,7 @@ It should Not generate the answer to the question, but only Return the sources a
       - `test_generated_docstrings_content` assertions (`docstring_system_test.py:260,269`) match the updated description prefixes from Step 4.
       - All 22 steps are now complete — no further changes needed.
 
-- [ ] 23. Guard against `None` citations in `_simplify_citations` in `rag_mcp_server.py`.
+- [x] 23. Guard against `None` citations in `_simplify_citations` in `rag_mcp_server.py`.
     - Acceptance Criteria:
       - Add `if citations is None: return []` at the top of `_simplify_citations(self, citations)` in `services/mcp-server/src/rag_mcp_server.py` (line 77).
       - This prevents `for citation in citations` from failing if the backend returns `None` for an empty result.

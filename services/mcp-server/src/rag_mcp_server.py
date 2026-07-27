@@ -51,8 +51,8 @@ class RagMcpServer:
         )
         self._server.run(transport=self.TRANSPORT, host=self._settings.host, port=self._settings.port)
 
-    def _simplify_citations(self, citations: list[InformationPiece]) -> list[dict]:
-        if not citations:
+    def _simplify_citations(self, citations: list[InformationPiece] | None) -> list[dict]:
+        if citations is None:
             return []
         return [
             {
