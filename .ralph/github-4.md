@@ -204,7 +204,7 @@ It should Not generate the answer to the question, but only Return the sources a
     - The existing list comprehension body remains unchanged.
     - Both `chat_simple` and `chat_with_history` continue to behave identically for non-None inputs.
 
-- [ ] 24. Move `_simplify_citations` before the public methods that use it in `rag_mcp_server.py`.
+- [x] 24. Move `_simplify_citations` before the public methods that use it in `rag_mcp_server.py`.
   - Acceptance Criteria:
     - Move the `_simplify_citations` method definition (currently at lines 77-86 in `services/mcp-server/src/rag_mcp_server.py`) to before `chat_simple` (line 54) and `chat_with_history` (line 60) for better readability.
     - Place the method after `run()` (ends at line 52) and before the `@extensible_docstring("chat_simple")` decorator (line 54), i.e., at approximately line 53.
@@ -216,7 +216,7 @@ It should Not generate the answer to the question, but only Return the sources a
 - [ ] 25. Extract duplicated example strings to a module-level constant in `mcp_settings.py`.
   - Acceptance Criteria:
     - The example strings in `chat_simple_examples` (lines 52-66) and `chat_with_history_examples` (lines 90-103) in `services/mcp-server/src/settings/mcp_settings.py` are identical multi-line blocks:
-      ```
+      ```python
       'Example return value:\n'
       '[\n'
       '  {\n'
@@ -232,29 +232,33 @@ It should Not generate the answer to the question, but only Return the sources a
     - Extract the shared example text into a module-level constant (e.g., `_CITATION_EXAMPLE`) defined before the `MCPSettings` class (before line 7).
     - Update both `chat_simple_examples` (line 52) and `chat_with_history_examples` (line 90) to `default=_CITATION_EXAMPLE` referencing the constant.
     - No behavior change — the default values remain identical strings.
+    - After extraction, `mcp_settings.py` will have fewer total lines because each duplicated 13-line block is replaced by a single-line reference.
+    - `test_default_settings` (line 195) asserts `"content" in settings.chat_simple_examples` — still passes because `_CITATION_EXAMPLE` contains `"content"`. Similarly line 203 for `chat_with_history_examples`.
 
 - [ ] 26. Improve `test_default_settings` assertion fragility in `docstring_system_test.py`.
   - Acceptance Criteria:
     - In `test_default_settings` (`services/mcp-server/tests/docstring_system_test.py:195`), replace `assert "content" in settings.chat_simple_examples` with `assert '"content":' in settings.chat_simple_examples` (checking for the JSON key with colon).
     - Similarly replace `assert "content" in settings.chat_with_history_examples` (line 203) with `assert '"content":' in settings.chat_with_history_examples`.
-    - The example strings contain the literal text `"content": "Retrieved text snippet..."` so both `"content":` assertions will pass.
+    - The example strings (whether inline or from `_CITATION_EXAMPLE` constant after Step 25) contain the literal text `"content": "Retrieved text snippet..."` so both `"content":` assertions will pass.
     - This makes the assertions less fragile if the example text changes (e.g., if the word "content" appeared in non-key contexts).
+    - Other tests in the file are unaffected: `test_generated_docstrings_content` (line 254), `test_custom_configuration` (line 278), `test_function_execution_still_works` (line 309), `test_missing_settings_attributes` (line 333), `test_empty_configuration` (line 357) — none of these assert on the examples field.
 
 - [ ] 27. Ensure `.ralph/github-4.md` has a trailing newline for POSIX compliance.
   - Acceptance Criteria:
     - Verify `.ralph/github-4.md` ends with a newline character (`0a` byte).
-    - File is currently 241 lines (with Step 23 checked).
+    - File is currently 264 lines (with Step 24 checked and Steps 25-26 acceptance criteria updated).
     - No change expected — the file already ends with a trailing newline from prior steps.
 
 - [ ] 28. Run `make test` and confirm it succeeds.
   - Acceptance Criteria:
     - Run `make test` in `services/mcp-server/` directory (which executes `poetry run python -m pytest tests`).
     - The command exits with a zero status code, indicating all tests pass after Steps 24-26.
-    - Step 24: Reordering `_simplify_citations` before `chat_simple`/`chat_with_history` is a pure code organization change with no behavior impact — no tests import or call `_simplify_citations` directly.
-    - Step 25: Extracting the example constant does not change the default values — `test_default_settings` assertions at lines 195 and 203 still pass (both check for `"content"` substring which is in the constant).
+    - Step 24: Reordered `_simplify_citations` (now at `rag_mcp_server.py:54-63`) before `chat_simple` (`rag_mcp_server.py:65`) and `chat_with_history` (`rag_mcp_server.py:71`) — pure code organization change, no behavior impact. No tests import or call `_simplify_citations` directly.
+    - Step 25: Extracting the example constant does not change the default values — `test_default_settings` assertions at `docstring_system_test.py:195` and `docstring_system_test.py:203` still pass (both check for `"content"` substring which is in the constant).
     - Step 26: Updated assertions check for `"content":` (with colon) which is present in the example strings — assertions pass.
-    - `test_generated_docstrings_content` (line 254): assertions at lines 260 and 269 match the current description prefixes — unaffected.
-    - `test_custom_configuration` (line 278): uses its own custom description string — unaffected.
-    - `test_empty_configuration` (line 357): uses empty string descriptions — unaffected.
-    - `test_function_execution_still_works` (line 309): calls test class factory methods — unaffected.
-    - `test_missing_settings_attributes` (line 333): deletes specific attributes — unaffected.
+    - `test_generated_docstrings_content` (`docstring_system_test.py:254`): assertions at lines 260 and 269 match the current description prefixes from `mcp_settings.py:38` and `mcp_settings.py:71` — unaffected.
+    - `test_custom_configuration` (`docstring_system_test.py:278`): uses its own custom description string — unaffected.
+    - `test_empty_configuration` (`docstring_system_test.py:357`): uses empty string descriptions — unaffected.
+    - `test_function_execution_still_works` (`docstring_system_test.py:309`): calls test class factory methods — unaffected.
+    - `test_missing_settings_attributes` (`docstring_system_test.py:333`): deletes specific attributes — unaffected.
+    - `rag_mcp_server.py` total line count is 101; `mcp_settings.py` will have fewer lines after Step 25 extraction; `docstring_system_test.py` is 388 lines.
