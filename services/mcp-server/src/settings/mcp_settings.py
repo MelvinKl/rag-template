@@ -4,17 +4,17 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 _CITATION_EXAMPLE = (
-    'Example return value:\n'
-    '[\n'
-    '  {\n'
+    "Example return value:\n"
+    "[\n"
+    "  {\n"
     '    "content": "Retrieved text snippet from the document...",\n'
     '    "metadata": {"source": "document.pdf", "page": 1}\n'
-    '  },\n'
-    '  {\n'
+    "  },\n"
+    "  {\n"
     '    "content": "Another relevant text snippet...",\n'
     '    "metadata": {"source": "guide.md", "page": 3}\n'
-    '  }\n'
-    ']'
+    "  }\n"
+    "]"
 )
 
 
@@ -83,8 +83,6 @@ class MCPSettings(BaseSettings):
             ),
         }
     )
-    chat_with_history_returns: str = Field(
-        default="List of citation objects, each containing content and metadata."
-    )
+    chat_with_history_returns: str = Field(default="List of citation objects, each containing content and metadata.")
     chat_with_history_notes: str = Field(default="")
     chat_with_history_examples: str = Field(default=_CITATION_EXAMPLE)

@@ -1,4 +1,5 @@
 """Module for configuring and initializing the MCP server."""
+
 from __future__ import annotations
 
 import logging
@@ -51,17 +52,6 @@ class RagMcpServer:
         )
         self._server.run(transport=self.TRANSPORT, host=self._settings.host, port=self._settings.port)
 
-    def _simplify_citations(self, citations: list[InformationPiece] | None) -> list[dict]:
-        if citations is None:
-            return []
-        return [
-            {
-                "content": citation.page_content,
-                "metadata": {pair.key: pair.value for pair in (citation.metadata or [])},
-            }
-            for citation in citations
-        ]
-
     @extensible_docstring("chat_simple")
     async def chat_simple(self, session_id: str, message: str) -> list[dict]:
         chat_request = ChatRequest(message=message)
@@ -84,6 +74,17 @@ class RagMcpServer:
         chat_request = ChatRequest(message=message, history=chat_history)
         response = await self._handle_chat(session_id, chat_request)
         return self._simplify_citations(response.citations)
+
+    def _simplify_citations(self, citations: list[InformationPiece] | None) -> list[dict]:
+        if citations is None:
+            return []
+        return [
+            {
+                "content": citation.page_content,
+                "metadata": {pair.key: pair.value for pair in (citation.metadata or [])},
+            }
+            for citation in citations
+        ]
 
     def _register_tools(self):
         """Register all MCP tools with the server."""
