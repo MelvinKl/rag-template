@@ -51,25 +51,8 @@ class RagMcpServer:
         self._server.run(transport=self.TRANSPORT, host=self._settings.host, port=self._settings.port)
 
     @extensible_docstring("chat_simple")
-    async def chat_simple(self, session_id: str, message: str) -> str:
-        chat_request = ChatRequest(message=message)
-        response = await self._handle_chat(session_id, chat_request)
-        return response.answer
-
-    @extensible_docstring("chat_with_history")
-    async def chat_with_history(
-        self, session_id: str, message: str, history: list[dict[str, str]] = None
-    ) -> dict[str, Any]:
-        # Build chat history if provided
-        chat_history = None
-        if history:
-            history_messages = []
-            for item in history:
-                role = ChatRole.USER if item.get("role", "").lower() == "user" else ChatRole.ASSISTANT
-                history_messages.append(ChatHistoryMessage(role=role, message=item["message"]))
-            chat_history = ChatHistory(messages=history_messages)
-
-        chat_request = ChatRequest(message=message, history=chat_history)
+    async def chat_simple(self, session_id: str, message: str) -> list[dict[str, Any]]:
+        chat_request = ChatRequest(message=message, skip_answer_generation=True)
         response = await self._handle_chat(session_id, chat_request)
 
         # Simplify citations for easier consumption
@@ -82,11 +65,35 @@ class RagMcpServer:
                 }
             )
 
-        return {
-            "answer": response.answer,
-            "finish_reason": response.finish_reason,
-            "citations": simplified_citations,
-        }
+        return simplified_citations
+
+    @extensible_docstring("chat_with_history")
+    async def chat_with_history(
+        self, session_id: str, message: str, history: list[dict[str, str]] = None
+    ) -> list[dict[str, Any]]:
+        # Build chat history if provided
+        chat_history = None
+        if history:
+            history_messages = []
+            for item in history:
+                role = ChatRole.USER if item.get("role", "").lower() == "user" else ChatRole.ASSISTANT
+                history_messages.append(ChatHistoryMessage(role=role, message=item["message"]))
+            chat_history = ChatHistory(messages=history_messages)
+
+        chat_request = ChatRequest(message=message, history=chat_history, skip_answer_generation=True)
+        response = await self._handle_chat(session_id, chat_request)
+
+        # Simplify citations for easier consumption
+        simplified_citations = []
+        for citation in response.citations:
+            simplified_citations.append(
+                {
+                    "content": citation.page_content,
+                    "metadata": {pair.key: pair.value for pair in citation.metadata},
+                }
+            )
+
+        return simplified_citations
 
     def _register_tools(self):
         """Register all MCP tools with the server."""

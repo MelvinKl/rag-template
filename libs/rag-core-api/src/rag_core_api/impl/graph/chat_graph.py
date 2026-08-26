@@ -145,6 +145,63 @@ class DefaultChatGraph(GraphBase):
                 finish_reason=self._error_messages.empty_message,
             )
 
+        # If skip_answer_generation is True, we only want to retrieve citations without generating an answer
+        if graph_input.skip_answer_generation:
+            history_of_interest = []
+            if graph_input.history and graph_input.history.messages:
+                history_of_interest = graph_input.history.messages[-self._chat_history_settings.limit :]
+                if self._chat_history_settings.reverse:
+                    pairs = list(zip(history_of_interest[::2], history_of_interest[1::2]))
+                    reversed_pairs = pairs[::-1]
+                    history_of_interest = [item for sublist in reversed_pairs for item in sublist]
+            history = "\n".join([f"{x.role}: {x.message}" for x in history_of_interest])
+            state = AnswerGraphState.create(
+                question=graph_input.message,
+                history=history,
+                error_messages=[],
+                finish_reasons=[],
+                information_pieces=[],
+                langchain_documents=[],
+            )
+
+            logger.info(
+                "RECEIVED question (skip answer generation): %s",
+                state["question"],
+            )
+
+            # Run the graph up to the retrieve node to get information pieces
+            # We'll manually execute the nodes up to retrieve since we don't need to generate
+            # Each node returns a partial dict, so we merge the results into the state
+            current_state = state
+
+            # Determine language node
+            current_state = {**current_state, **await self._determine_language_node(current_state, config)}
+
+            # Rephrase node
+            current_state = {**current_state, **await self._rephrase_node(current_state, config)}
+
+            # Retrieve node
+            current_state = {**current_state, **await self._retrieve_node(current_state)}
+
+            # Check if we encountered an error during retrieval
+            if current_state.get(self.ERROR_MESSAGES_KEY):
+                logger.error("Error during retrieval: %s", current_state[self.ERROR_MESSAGES_KEY])
+                return ChatResponse(
+                    answer=" ".join(current_state[self.ERROR_MESSAGES_KEY]),
+                    citations=[],
+                    finish_reason=" ".join(current_state.get(self.FINISH_REASONS, [])),
+                )
+
+            # Create response with only citations (no answer)
+            information_pieces = current_state.get("information_pieces", [])
+
+            logger.info("RETRIEVED citations only (skipped answer generation)")
+            return ChatResponse(
+                answer="",  # Empty answer as we skipped generation
+                citations=information_pieces,
+                finish_reason="stop",
+            )
+
         history_of_interest = []
         if graph_input.history and graph_input.history.messages:
             history_of_interest = graph_input.history.messages[-self._chat_history_settings.limit :]

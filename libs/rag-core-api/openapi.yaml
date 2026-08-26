@@ -180,6 +180,11 @@ components:
           description: ""
           title: message
           type: string
+        skip_answer_generation:
+          default: false
+          description: "If true, skip the answer generation step and only return citations."
+          title: skip_answer_generation
+          type: boolean
       required:
       - message
       title: chat_request
