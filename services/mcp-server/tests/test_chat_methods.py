@@ -10,7 +10,6 @@ from rag_backend_client.openapi_client.models.information_piece import Informati
 from rag_backend_client.openapi_client.models.key_value_pair import KeyValuePair
 from rag_backend_client.openapi_client.models.content_type import ContentType
 from fastmcp import FastMCP
-from pydantic_settings import BaseSettings
 
 
 # Fixtures
@@ -35,9 +34,7 @@ def mock_mcp_server():
 @pytest.fixture
 def rag_mcp_server(mock_api_client, mock_mcp_server, settings):
     """Create a RagMcpServer instance with mocked dependencies."""
-    return RagMcpServer(
-        api_client=mock_api_client, mcp_server=mock_mcp_server, settings=settings
-    )
+    return RagMcpServer(api_client=mock_api_client, mcp_server=mock_mcp_server, settings=settings)
 
 
 @pytest.fixture
@@ -75,23 +72,19 @@ def sample_chat_response(sample_citations):
 
 # Tests for chat_simple method
 @pytest.mark.asyncio
-async def test_chat_simple_returns_only_citations(
-    rag_mcp_server, mock_api_client, sample_chat_response
-):
+async def test_chat_simple_returns_only_citations(rag_mcp_server, mock_api_client, sample_chat_response):
     """Test that chat_simple returns only citations without the answer."""
     # Setup
     rag_mcp_server._handle_chat = AsyncMock(return_value=sample_chat_response)
 
     # Execute
-    result = await rag_mcp_server.chat_simple(
-        session_id="test_session", message="test message"
-    )
+    result = await rag_mcp_server.chat_simple(session_id="test_session", message="test message")
 
     # Verify that skip_answer_generation was set to True
     call_args = rag_mcp_server._handle_chat.call_args
     assert call_args is not None
     chat_request = call_args[0][1]  # Second argument is chat_request
-    assert chat_request.skip_answer_generation == True
+    assert chat_request.skip_answer_generation is True
 
     # Verify
     assert isinstance(result, list)
@@ -107,9 +100,7 @@ async def test_chat_simple_returns_only_citations(
 
 
 @pytest.mark.asyncio
-async def test_chat_with_history_returns_only_citations(
-    rag_mcp_server, mock_api_client, sample_chat_response
-):
+async def test_chat_with_history_returns_only_citations(rag_mcp_server, mock_api_client, sample_chat_response):
     """Test that chat_with_history returns only citations without the answer."""
     # Setup
     rag_mcp_server._handle_chat = AsyncMock(return_value=sample_chat_response)
@@ -125,7 +116,7 @@ async def test_chat_with_history_returns_only_citations(
     call_args = rag_mcp_server._handle_chat.call_args
     assert call_args is not None
     chat_request = call_args[0][1]  # Second argument is chat_request
-    assert chat_request.skip_answer_generation == True
+    assert chat_request.skip_answer_generation is True
 
     # Verify
     assert isinstance(result, list)
@@ -151,15 +142,13 @@ async def test_chat_simple_handles_empty_citations(rag_mcp_server, mock_api_clie
     rag_mcp_server._handle_chat = AsyncMock(return_value=empty_response)
 
     # Execute
-    result = await rag_mcp_server.chat_simple(
-        session_id="test_session", message="test message"
-    )
+    result = await rag_mcp_server.chat_simple(session_id="test_session", message="test message")
 
     # Verify that skip_answer_generation was set to True
     call_args = rag_mcp_server._handle_chat.call_args
     assert call_args is not None
     chat_request = call_args[0][1]  # Second argument is chat_request
-    assert chat_request.skip_answer_generation == True
+    assert chat_request.skip_answer_generation is True
 
     # Verify
     assert isinstance(result, list)
@@ -167,9 +156,7 @@ async def test_chat_simple_handles_empty_citations(rag_mcp_server, mock_api_clie
 
 
 @pytest.mark.asyncio
-async def test_chat_with_history_handles_empty_citations(
-    rag_mcp_server, mock_api_client
-):
+async def test_chat_with_history_handles_empty_citations(rag_mcp_server, mock_api_client):
     """Test that chat_with_history handles empty citations correctly."""
     # Setup
     empty_response = MagicMock(spec=ChatResponse)
@@ -179,15 +166,13 @@ async def test_chat_with_history_handles_empty_citations(
     rag_mcp_server._handle_chat = AsyncMock(return_value=empty_response)
 
     # Execute
-    result = await rag_mcp_server.chat_with_history(
-        session_id="test_session", message="test message", history=[]
-    )
+    result = await rag_mcp_server.chat_with_history(session_id="test_session", message="test message", history=[])
 
     # Verify that skip_answer_generation was set to True
     call_args = rag_mcp_server._handle_chat.call_args
     assert call_args is not None
     chat_request = call_args[0][1]  # Second argument is chat_request
-    assert chat_request.skip_answer_generation == True
+    assert chat_request.skip_answer_generation is True
 
     # Verify
     assert isinstance(result, list)
