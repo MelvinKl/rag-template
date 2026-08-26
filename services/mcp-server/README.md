@@ -39,7 +39,7 @@ Simple question-answering interface that returns plain text responses.
 
 **Returns:**
 
-- `str`: Plain text answer from the RAG system
+    - `list[dict]`: List of citation objects, each containing content and metadata
 
 ### `chat_with_history`
 

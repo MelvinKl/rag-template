@@ -1,5 +1,7 @@
 """Module for configuring and initializing the MCP server."""
 
+from __future__ import annotations
+
 import logging
 
 from fastmcp import FastMCP
@@ -13,7 +15,7 @@ from rag_backend_client.openapi_client.models.chat_history_message import (
     ChatHistoryMessage,
 )
 from rag_backend_client.openapi_client.models.chat_role import ChatRole
-from typing import Any
+from rag_backend_client.openapi_client.models.information_piece import InformationPiece
 
 from docstring_system import (
     DocstringTemplateSystem,
@@ -51,15 +53,15 @@ class RagMcpServer:
         self._server.run(transport=self.TRANSPORT, host=self._settings.host, port=self._settings.port)
 
     @extensible_docstring("chat_simple")
-    async def chat_simple(self, session_id: str, message: str) -> str:
+    async def chat_simple(self, session_id: str, message: str) -> list[dict]:
         chat_request = ChatRequest(message=message)
         response = await self._handle_chat(session_id, chat_request)
-        return response.answer
+        return self._simplify_citations(response.citations)
 
     @extensible_docstring("chat_with_history")
     async def chat_with_history(
         self, session_id: str, message: str, history: list[dict[str, str]] = None
-    ) -> dict[str, Any]:
+    ) -> list[dict]:
         # Build chat history if provided
         chat_history = None
         if history:
@@ -71,22 +73,18 @@ class RagMcpServer:
 
         chat_request = ChatRequest(message=message, history=chat_history)
         response = await self._handle_chat(session_id, chat_request)
+        return self._simplify_citations(response.citations)
 
-        # Simplify citations for easier consumption
-        simplified_citations = []
-        for citation in response.citations:
-            simplified_citations.append(
-                {
-                    "content": citation.page_content,
-                    "metadata": {pair.key: pair.value for pair in citation.metadata},
-                }
-            )
-
-        return {
-            "answer": response.answer,
-            "finish_reason": response.finish_reason,
-            "citations": simplified_citations,
-        }
+    def _simplify_citations(self, citations: list[InformationPiece] | None) -> list[dict]:
+        if citations is None:
+            return []
+        return [
+            {
+                "content": citation.page_content,
+                "metadata": {pair.key: pair.value for pair in (citation.metadata or [])},
+            }
+            for citation in citations
+        ]
 
     def _register_tools(self):
         """Register all MCP tools with the server."""

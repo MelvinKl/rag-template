@@ -35,15 +35,24 @@ def test_class_factory():
                 setup_extensible_docstrings(self, docstring_system)
 
             @extensible_docstring("chat_simple")
-            def chat_simple(self, session_id: str, message: str) -> str:
-                return f"Response for {session_id}: {message}"
+            def chat_simple(self, session_id: str, message: str) -> list[dict]:
+                return [
+                    {
+                        "content": f"Response for {session_id}: {message}",
+                        "metadata": {},
+                    }
+                ]
 
             @extensible_docstring("chat_with_history")
-            def chat_with_history(self, session_id: str, message: str, history: list = None) -> dict:
-                return {
-                    "answer": f"Response for {session_id}: {message}",
-                    "citations": [],
-                }
+            def chat_with_history(
+                self, session_id: str, message: str, history: list[dict[str, str]] = None
+            ) -> list[dict]:
+                return [
+                    {
+                        "content": f"Response for {session_id}: {message}",
+                        "metadata": {},
+                    }
+                ]
 
         return TestClass(settings)
 
@@ -182,14 +191,16 @@ def test_default_settings(settings):
     assert isinstance(settings.chat_simple_parameter_descriptions, dict)
     assert isinstance(settings.chat_simple_returns, str)
     assert settings.chat_simple_notes == ""
-    assert settings.chat_simple_examples == ""
+    assert isinstance(settings.chat_simple_examples, str)
+    assert '"content":' in settings.chat_simple_examples
 
     # Test chat_with_history settings
     assert settings.chat_with_history_description is not None
     assert isinstance(settings.chat_with_history_parameter_descriptions, dict)
     assert isinstance(settings.chat_with_history_returns, str)
     assert settings.chat_with_history_notes == ""
-    assert settings.chat_with_history_examples == ""
+    assert isinstance(settings.chat_with_history_examples, str)
+    assert '"content":' in settings.chat_with_history_examples
 
 
 def test_parameter_descriptions():
@@ -255,13 +266,13 @@ def test_generated_docstrings_content(settings, test_class_factory):
 
     # Test chat_with_history docstring
     history_doc = instance.chat_with_history.__doc__
-    assert "Send a message with conversation history" in history_doc
+    assert "Send a message to the RAG system with chat history and get a list of citation objects" in history_doc
     assert "Parameters" in history_doc
     assert "session_id: str" in history_doc
     assert "message: str" in history_doc
     assert "history: list, optional" in history_doc
     assert "Returns" in history_doc
-    assert "dict" in history_doc  # Return type from function signature
+    assert "list" in history_doc  # Return type from function signature
 
 
 def test_custom_configuration(test_class_factory):
@@ -301,12 +312,21 @@ def test_function_execution_still_works(settings, test_class_factory):
 
     # Test chat_simple execution
     result = instance.chat_simple("test_session", "test_message")
-    assert result == "Response for test_session: test_message"
+    assert result == [
+        {
+            "content": "Response for test_session: test_message",
+            "metadata": {},
+        }
+    ]
 
     # Test chat_with_history execution
     result = instance.chat_with_history("test_session", "test_message", [])
-    expected = {"answer": "Response for test_session: test_message", "citations": []}
-    assert result == expected
+    assert result == [
+        {
+            "content": "Response for test_session: test_message",
+            "metadata": {},
+        }
+    ]
 
 
 # Edge case tests

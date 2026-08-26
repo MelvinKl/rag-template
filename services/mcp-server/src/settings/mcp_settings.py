@@ -3,6 +3,20 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+_CITATION_EXAMPLE = (
+    "Example return value:\n"
+    "[\n"
+    "  {\n"
+    '    "content": "Retrieved text snippet from the document...",\n'
+    '    "metadata": {"source": "document.pdf", "page": 1}\n'
+    "  },\n"
+    "  {\n"
+    '    "content": "Another relevant text snippet...",\n'
+    '    "metadata": {"source": "guide.md", "page": 3}\n'
+    "  }\n"
+    "]"
+)
+
 
 class MCPSettings(BaseSettings):
     """
@@ -35,9 +49,10 @@ class MCPSettings(BaseSettings):
     # Chat Simple Method Configuration
     chat_simple_description: str = Field(
         default=(
-            "Send a message to the RAG system and get a simple text response.\n\n"
+            "Send a message to the RAG system and get a list of citation objects.\n\n"
+            "Each citation object contains the content of the retrieved text and its metadata.\n"
             "This is the simplest way to interact with the RAG system - just provide a message "
-            "and get back the answer as plain text."
+            "and get back the relevant citations."
         )
     )
     chat_simple_parameter_descriptions: dict[str, str] = Field(
@@ -46,16 +61,16 @@ class MCPSettings(BaseSettings):
             "message": "The message/question to ask the RAG system.",
         }
     )
-    chat_simple_returns: str = Field(default="The answer from the RAG system as plain text.")
+    chat_simple_returns: str = Field(default="List of citation objects, each containing content and metadata.")
     chat_simple_notes: str = Field(default="")
-    chat_simple_examples: str = Field(default="")
+    chat_simple_examples: str = Field(default=_CITATION_EXAMPLE)
 
     # Chat With History Method Configuration
     chat_with_history_description: str = Field(
         default=(
-            "Send a message with conversation history and get structured response.\n\n"
-            "Provide conversation history as a simple list of dictionaries.\n"
-            "Each history item should have 'role' (either 'user' or 'assistant') and 'message' keys."
+            "Send a message to the RAG system with chat history and get a list of citation objects.\n\n"
+            "This method allows you to maintain conversation context by providing previous "
+            "messages. The response is a list of citation objects, each containing content and metadata."
         )
     )
     chat_with_history_parameter_descriptions: dict[str, str] = Field(
@@ -68,13 +83,6 @@ class MCPSettings(BaseSettings):
             ),
         }
     )
-    chat_with_history_returns: str = Field(
-        default=(
-            "Response containing:\n"
-            "    - answer: The response text\n"
-            "    - finish_reason: Why the response ended\n"
-            "    - citations: List of source documents used (simplified)"
-        )
-    )
+    chat_with_history_returns: str = Field(default="List of citation objects, each containing content and metadata.")
     chat_with_history_notes: str = Field(default="")
-    chat_with_history_examples: str = Field(default="")
+    chat_with_history_examples: str = Field(default=_CITATION_EXAMPLE)
